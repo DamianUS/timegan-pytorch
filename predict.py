@@ -1,5 +1,5 @@
 import argparse
-import distutils
+from distutils import util
 import os
 from models.utils import timegan_generator, save_generated_data
 import pickle
@@ -58,6 +58,6 @@ if __name__ == '__main__':
     parser.add_argument(
         '--recursive',
         default=False,
-        type=lambda x: bool(distutils.util.strtobool(str(x))))
+        type=lambda x: bool(util.strtobool(str(x))))
     args = parser.parse_args()
     main(args)
