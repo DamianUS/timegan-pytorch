@@ -7,12 +7,14 @@ import pickle
 import random
 import shutil
 import time
+from sklearn.preprocessing import StandardScaler
 
 # 3rd-Party Modules
 import numpy as np
 import torch
 import joblib
 from sklearn.model_selection import train_test_split
+import data_load
 
 # Self-Written Modules
 from data.data_preprocess import data_preprocess
@@ -21,40 +23,32 @@ from metrics.metric_utils import (
 )
 
 from models.timegan import TimeGAN
-from models.utils import timegan_trainer, timegan_generator
+from models.utils import timegan_trainer, timegan_generator, save_generated_data
 
 def main(args):
     ##############################################
     # Initialize output directories
     ##############################################
 
-    ## Runtime directory
-    code_dir = os.path.abspath(".")
-    if not os.path.exists(code_dir):
-        raise ValueError(f"Code directory not found at {code_dir}.")
-
-    ## Data directory
-    data_path = os.path.abspath("./data")
-    if not os.path.exists(data_path):
-        raise ValueError(f"Data file not found at {data_path}.")
-    data_dir = os.path.dirname(data_path)
-    data_file_name = os.path.basename(data_path)
-
     ## Output directories
-    args.model_path = os.path.abspath(f"./output/{args.exp}/")
-    out_dir = os.path.abspath(args.model_path)
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir, exist_ok=True)
+    experiment_save_dir = os.path.abspath(f'{args.experiment_save_dir}/generated_data')
+    if not os.path.exists(experiment_save_dir):
+        os.makedirs(experiment_save_dir, exist_ok=True)
     
     # TensorBoard directory
-    tensorboard_path = os.path.abspath("./tensorboard")
+    tensorboard_path = os.path.abspath(f'{args.experiment_save_dir}/tensorboard')
     if not os.path.exists(tensorboard_path):
         os.makedirs(tensorboard_path, exist_ok=True)
 
-    print(f"\nCode directory:\t\t\t{code_dir}")
-    print(f"Data directory:\t\t\t{data_path}")
-    print(f"Output directory:\t\t{out_dir}")
-    print(f"TensorBoard directory:\t\t{tensorboard_path}\n")
+    # Model directory
+    args.model_path = os.path.abspath(f'{args.experiment_save_dir}/model')
+    if not os.path.exists(args.model_path):
+        os.makedirs(args.model_path, exist_ok=True)
+
+    # Save parameterization
+    text_file = open(f'{args.experiment_save_dir}/parameters.txt', "w")
+    text_file.write(str(args))
+    text_file.close()
 
     ##############################################
     # Initialize random seed and CUDA
@@ -75,122 +69,59 @@ def main(args):
     else:
         print("Using CPU\n")
         args.device = torch.device("cpu")
-
     #########################
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/stock.csv"
-    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
-        data_path, args.max_seq_len
-    )
+    # data_path = "data/stock.csv"
+    # X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
+    #     data_path, args.max_seq_len
+    # )
 
-    print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
-    print(f"Original data preview:\n{X[:2, :10, :2]}\n")
-
-    args.feature_dim = X.shape[-1]
-    args.Z_dim = X.shape[-1]
-
-    # Train-Test Split data and time
-    train_data, test_data, train_time, test_time = train_test_split(
-        X, T, test_size=args.train_rate, random_state=args.seed
-    )
+    if args.ori_data_filename is not None:
+        X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len, stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13, scaling_method='standard')
+    else:
+        X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type, sequence_length=args.seq_len, stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13, scaling_method='standard')
 
     #########################
     # Initialize and Run model
     #########################
-
+    args.feature_dim = X.shape[-1]
+    args.Z_dim = X.shape[-1]
+    args.padding_value = -1.0
+    args.max_seq_len = args.seq_len
     # Log start time
     start = time.time()
 
     model = TimeGAN(args)
     if args.is_train == True:
-        timegan_trainer(model, train_data, train_time, args)
-    generated_data = timegan_generator(model, train_time, args)
-    generated_time = train_time
+        timegan_trainer(model, X, T, args)
+    # generated_data = timegan_generator(model, T, args)
+    # save_generated_data(generated_data=generated_data, scaler=scaler, experiment_save_dir=experiment_save_dir, n_samples=10)
 
     # Log end time
     end = time.time()
 
-    print(f"Generated data preview:\n{generated_data[:2, -10:, :2]}\n")
+    # print(f"Generated data preview:\n{generated_data_rescaled[:2, -10:, :2]}\n")
     print(f"Model Runtime: {(end - start)/60} mins\n")
-
+    print(f"Total Runtime: {(time.time() - start)/60} mins\n")
     #########################
     # Save train and generated data for visualization
     #########################
     
     # Save splitted data and generated data
-    with open(f"{args.model_path}/train_data.pickle", "wb") as fb:
-        pickle.dump(train_data, fb)
-    with open(f"{args.model_path}/train_time.pickle", "wb") as fb:
-        pickle.dump(train_time, fb)
-    with open(f"{args.model_path}/test_data.pickle", "wb") as fb:
-        pickle.dump(test_data, fb)
-    with open(f"{args.model_path}/test_time.pickle", "wb") as fb:
-        pickle.dump(test_time, fb)
-    with open(f"{args.model_path}/fake_data.pickle", "wb") as fb:
-        pickle.dump(generated_data, fb)
-    with open(f"{args.model_path}/fake_time.pickle", "wb") as fb:
-        pickle.dump(generated_time, fb)
-
-    #########################
-    # Preprocess data for seeker
-    #########################
-
-    # Define enlarge data and its labels
-    enlarge_data = np.concatenate((train_data, test_data), axis=0)
-    enlarge_time = np.concatenate((train_time, test_time), axis=0)
-    enlarge_data_label = np.concatenate((np.ones([train_data.shape[0], 1]), np.zeros([test_data.shape[0], 1])), axis=0)
-
-    # Mix the order
-    idx = np.random.permutation(enlarge_data.shape[0])
-    enlarge_data = enlarge_data[idx]
-    enlarge_data_label = enlarge_data_label[idx]
-
-    #########################
-    # Evaluate the performance
-    #########################
-
-    # 1. Feature prediction
-    feat_idx = np.random.permutation(train_data.shape[2])[:args.feat_pred_no]
-    print("Running feature prediction using original data...")
-    ori_feat_pred_perf = feature_prediction(
-        (train_data, train_time), 
-        (test_data, test_time),
-        feat_idx
-    )
-    print("Running feature prediction using generated data...")
-    new_feat_pred_perf = feature_prediction(
-        (generated_data, generated_time),
-        (test_data, test_time),
-        feat_idx
-    )
-
-    feat_pred = [ori_feat_pred_perf, new_feat_pred_perf]
-
-    print('Feature prediction results:\n' +
-          f'(1) Ori: {str(np.round(ori_feat_pred_perf, 4))}\n' +
-          f'(2) New: {str(np.round(new_feat_pred_perf, 4))}\n')
-
-    # 2. One step ahead prediction
-    print("Running one step ahead prediction using original data...")
-    ori_step_ahead_pred_perf = one_step_ahead_prediction(
-        (train_data, train_time), 
-        (test_data, test_time)
-    )
-    print("Running one step ahead prediction using generated data...")
-    new_step_ahead_pred_perf = one_step_ahead_prediction(
-        (generated_data, generated_time),
-        (test_data, test_time)
-    )
-
-    step_ahead_pred = [ori_step_ahead_pred_perf, new_step_ahead_pred_perf]
-
-    print('One step ahead prediction results:\n' +
-          f'(1) Ori: {str(np.round(ori_step_ahead_pred_perf, 4))}\n' +
-          f'(2) New: {str(np.round(new_step_ahead_pred_perf, 4))}\n')
-
-    print(f"Total Runtime: {(time.time() - start)/60} mins\n")
+    # with open(f"{args.model_path}/train_data.pickle", "wb") as fb:
+    #     pickle.dump(train_data, fb)
+    # with open(f"{args.model_path}/train_time.pickle", "wb") as fb:
+    #     pickle.dump(train_time, fb)
+    # with open(f"{args.model_path}/test_data.pickle", "wb") as fb:
+    #     pickle.dump(test_data, fb)
+    # with open(f"{args.model_path}/test_time.pickle", "wb") as fb:
+    #     pickle.dump(test_time, fb)
+    # with open(f"{args.model_path}/fake_data.pickle", "wb") as fb:
+    #     pickle.dump(generated_data_rescaled, fb)
+    # with open(f"{args.model_path}/fake_time.pickle", "wb") as fb:
+    #     pickle.dump(generated_time, fb)
 
     return None
 
@@ -212,11 +143,11 @@ if __name__ == "__main__":
     parser.add_argument(
         '--device',
         choices=['cuda', 'cpu'],
-        default='cuda',
+        default='cpu',
         type=str)
     parser.add_argument(
-        '--exp',
-        default='test',
+        '--experiment_save_dir',
+        default='./experiments',
         type=str)
     parser.add_argument(
         "--is_train",
@@ -224,24 +155,46 @@ if __name__ == "__main__":
         default=True)
     parser.add_argument(
         '--seed',
-        default=0,
-        type=int)
-    parser.add_argument(
-        '--feat_pred_no',
-        default=2,
+        default=42,
         type=int)
 
     # Data Arguments
     parser.add_argument(
-        '--max_seq_len',
-        default=100,
+        '--seq_len',
+        default=288,
         type=int)
     parser.add_argument(
-        '--train_rate',
-        default=0.5,
-        type=float)
+        '--n_samples',
+        default=10,
+        type=int)
+    parser.add_argument(
+        '--scaling_method',
+        default='standard',
+        type=str)
+    parser.add_argument(
+        '--ori_data_filename',
+        default=None,
+        type=str)
+    parser.add_argument(
+        '--trace',
+        choices=['alibaba2018', 'azure_v2', 'google2019'],
+        default='alibaba2018',
+        type=str)
+    parser.add_argument(
+        '--trace_type',
+        default='machine_usage',
+        type=str)
+    parser.add_argument(
+        '--trace_timestep',
+        default=300,
+        type=int)
 
     # Model Arguments
+    parser.add_argument(
+        '--module',
+        choices=['lstm', 'gru'],
+        default='gru',
+        type=str)
     parser.add_argument(
         '--emb_epochs',
         default=600,

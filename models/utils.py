@@ -26,7 +26,7 @@ def embedding_trainer(
     """  
     logger = trange(args.emb_epochs, desc=f"Epoch: 0, Loss: 0")
     for epoch in logger:   
-        for X_mb, T_mb in dataloader:
+        for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             # Reset gradients
             model.zero_grad()
 
@@ -64,7 +64,7 @@ def supervisor_trainer(
     """
     logger = trange(args.sup_epochs, desc=f"Epoch: 0, Loss: 0")
     for epoch in logger:
-        for X_mb, T_mb in dataloader:
+        for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             # Reset gradients
             model.zero_grad()
 
@@ -102,12 +102,12 @@ def joint_trainer(
     """The training loop for training the model altogether
     """
     logger = trange(
-        args.sup_epochs, 
+        args.gan_epochs,
         desc=f"Epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0"
     )
     
     for epoch in logger:
-        for X_mb, T_mb in dataloader:
+        for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             ## Generator Training
             for _ in range(2):
                 # Random Generator
@@ -170,6 +170,7 @@ def joint_trainer(
                 epoch
             )
             writer.flush()
+        save_epoch(args, epoch, model)
 
 def timegan_trainer(model, data, time, args):
     """The training procedure for TimeGAN
@@ -200,7 +201,7 @@ def timegan_trainer(model, data, time, args):
     d_opt = torch.optim.Adam(model.discriminator.parameters(), lr=args.learning_rate)
     
     # TensorBoard writer
-    writer = SummaryWriter(os.path.join(f"tensorboard/{args.exp}"))
+    writer = SummaryWriter(os.path.join(f'{args.experiment_save_dir}/tensorboard'))
 
     print("\nStart Embedding Network Training")
     embedding_trainer(
@@ -270,3 +271,21 @@ def timegan_generator(model, T, args):
         generated_data = model(X=None, T=T, Z=Z, obj="inference")
 
     return generated_data.numpy()
+
+def save_generated_data(generated_data, scaler, experiment_save_dir, n_samples=10):
+    if not os.path.exists(experiment_save_dir):
+        os.makedirs(experiment_save_dir, exist_ok=True)
+    generated_data_n_samples = generated_data[:n_samples]
+    generated_data_rescaled = np.reshape(scaler.inverse_transform(generated_data_n_samples.reshape(-1, 1)),
+                                         generated_data_n_samples.shape)
+    for i, generated_sample in enumerate(generated_data_rescaled):
+        np.savetxt(f'{experiment_save_dir}/sample_{i}.csv', generated_sample, delimiter=",", fmt='%f')
+
+
+def save_epoch(args, epoch, model):
+    epoch_directory = f'{args.model_path}/epoch_{epoch}'
+    if not os.path.exists(epoch_directory):
+        os.makedirs(epoch_directory, exist_ok=True)
+    torch.save(args, f'{epoch_directory}/args.pickle')
+    torch.save(model.state_dict(), f'{epoch_directory}/model.pt')
+    print(f"\nSaved epoch_{epoch} at path: {epoch_directory}")

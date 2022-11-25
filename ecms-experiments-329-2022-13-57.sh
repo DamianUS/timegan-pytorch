@@ -1,0 +1,1 @@
+python main.py --module gru --num_layers 3 --hidden_dim 10 --emb_epochs 500 --sup_epochs 500 --gan_epochs 500 --learning_rate 0.001 --trace alibaba2018 --seq_len 288 --batch_size 100 --n_samples 10 --scaling_method minmax --experiment_save_dir ./experiments/timegan/alibaba2018/ecms-experiments-test
