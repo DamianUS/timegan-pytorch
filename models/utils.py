@@ -27,20 +27,21 @@ def embedding_trainer(
     logger = trange(args.emb_epochs, desc=f"Epoch: 0, Loss: 0")
     for epoch in logger:   
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
-            # Reset gradients
-            model.zero_grad()
+            if X_mb.shape[0] == args.batch_size:
+                # Reset gradients
+                model.zero_grad()
 
-            # Forward Pass
-            # time = [args.max_seq_len for _ in range(len(T_mb))]
-            _, E_loss0, E_loss_T0 = model(X=X_mb, T=T_mb, Z=None, obj="autoencoder")
-            loss = np.sqrt(E_loss_T0.item())
+                # Forward Pass
+                # time = [args.max_seq_len for _ in range(len(T_mb))]
+                _, E_loss0, E_loss_T0 = model(X=X_mb, T=T_mb, Z=None, obj="autoencoder")
+                loss = np.sqrt(E_loss_T0.item())
 
-            # Backward Pass
-            E_loss0.backward()
+                # Backward Pass
+                E_loss0.backward()
 
-            # Update model parameters
-            e_opt.step()
-            r_opt.step()
+                # Update model parameters
+                e_opt.step()
+                r_opt.step()
 
         # Log loss for final batch of each epoch (29 iters)
         logger.set_description(f"Epoch: {epoch}, Loss: {loss:.4f}")
@@ -65,18 +66,19 @@ def supervisor_trainer(
     logger = trange(args.sup_epochs, desc=f"Epoch: 0, Loss: 0")
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
-            # Reset gradients
-            model.zero_grad()
+            if X_mb.shape[0] == args.batch_size:
+                # Reset gradients
+                model.zero_grad()
 
-            # Forward Pass
-            S_loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor")
+                # Forward Pass
+                S_loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor")
 
-            # Backward Pass
-            S_loss.backward()
-            loss = np.sqrt(S_loss.item())
+                # Backward Pass
+                S_loss.backward()
+                loss = np.sqrt(S_loss.item())
 
-            # Update model parameters
-            s_opt.step()
+                # Update model parameters
+                s_opt.step()
 
         # Log loss for final batch of each epoch (29 iters)
         logger.set_description(f"Epoch: {epoch}, Loss: {loss:.4f}")
@@ -108,47 +110,48 @@ def joint_trainer(
     
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
-            ## Generator Training
-            for _ in range(2):
+            if X_mb.shape[0] == args.batch_size:
+                ## Generator Training
+                for _ in range(2):
+                    # Random Generator
+                    Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
+
+                    # Forward Pass (Generator)
+                    model.zero_grad()
+                    G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
+                    G_loss.backward()
+                    G_loss = np.sqrt(G_loss.item())
+
+                    # Update model parameters
+                    g_opt.step()
+                    s_opt.step()
+
+                    # Forward Pass (Embedding)
+                    model.zero_grad()
+                    E_loss, _, E_loss_T0 = model(X=X_mb, T=T_mb, Z=Z_mb, obj="autoencoder")
+                    E_loss.backward()
+                    E_loss = np.sqrt(E_loss.item())
+
+                    # Update model parameters
+                    e_opt.step()
+                    r_opt.step()
+
                 # Random Generator
                 Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
 
-                # Forward Pass (Generator)
+                ## Discriminator Training
                 model.zero_grad()
-                G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
-                G_loss.backward()
-                G_loss = np.sqrt(G_loss.item())
+                # Forward Pass
+                D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
 
-                # Update model parameters
-                g_opt.step()
-                s_opt.step()
+                # Check Discriminator loss
+                if D_loss > args.dis_thresh:
+                    # Backward Pass
+                    D_loss.backward()
 
-                # Forward Pass (Embedding)
-                model.zero_grad()
-                E_loss, _, E_loss_T0 = model(X=X_mb, T=T_mb, Z=Z_mb, obj="autoencoder")
-                E_loss.backward()
-                E_loss = np.sqrt(E_loss.item())
-                
-                # Update model parameters
-                e_opt.step()
-                r_opt.step()
-
-            # Random Generator
-            Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
-
-            ## Discriminator Training
-            model.zero_grad()
-            # Forward Pass
-            D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
-
-            # Check Discriminator loss
-            if D_loss > args.dis_thresh:
-                # Backward Pass
-                D_loss.backward()
-
-                # Update model parameters
-                d_opt.step()
-            D_loss = D_loss.item()
+                    # Update model parameters
+                    d_opt.step()
+                D_loss = D_loss.item()
 
         logger.set_description(
             f"Epoch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, D: {D_loss:.4f}"
