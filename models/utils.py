@@ -112,7 +112,7 @@ def joint_trainer(
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             if X_mb.shape[0] == args.batch_size:
                 ## Generator Training
-                for _ in range(8):
+                for _ in range(2):
                     # Random Generator
                     #Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
                     Z_mb = list()
