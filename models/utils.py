@@ -109,7 +109,7 @@ def joint_trainer(
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             ## Generator Training
-            for _ in range(2):
+            for _ in range(4):
                 # Random Generator
                 Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
 
@@ -117,7 +117,7 @@ def joint_trainer(
                 model.zero_grad()
                 G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
                 G_loss.backward()
-                G_loss = np.sqrt(G_loss.item())
+                G_loss = G_loss.item()
 
                 # Update model parameters
                 g_opt.step()
