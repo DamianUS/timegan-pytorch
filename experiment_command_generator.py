@@ -6,7 +6,7 @@ from datetime import datetime
 
 def generate_experiment_command(module, num_layers, hidden_dim, emb_epochs, sup_epochs, gan_epochs, learning_rate,
                                 trace, seq_len, batch_size, scaling_method):
-    experiment_save_dir = f'./experiments/timegan-pytorch/alibaba2018/ecms-experiments-pytorch/gan_epochs-{gan_epochs}-num-layers-{num_layers}-hidden_dim-{hidden-dim}-batch_size-{batch_size}'
+    experiment_save_dir = f'./experiments/timegan-pytorch/alibaba2018/ecms-experiments-pytorch/num-layers-{num_layers}-hidden_dim-{hidden_dim}-batch_size-{batch_size}'
     return f'python main.py --module {module} --num_layers {num_layers} --hidden_dim {hidden_dim} --emb_epochs {emb_epochs} ' \
            f'--sup_epochs {sup_epochs} --gan_epochs {gan_epochs} --learning_rate {learning_rate} ' \
            f'--trace {trace} --seq_len {seq_len} --batch_size {batch_size} --n_samples 10 --scaling_method {scaling_method} ' \
