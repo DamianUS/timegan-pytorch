@@ -120,7 +120,7 @@ def joint_trainer(
                     model.zero_grad()
                     G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
                     G_loss.backward()
-                    G_loss = np.sqrt(G_loss.item())
+                    G_loss = G_loss.item()
 
                     # Update model parameters
                     g_opt.step()
