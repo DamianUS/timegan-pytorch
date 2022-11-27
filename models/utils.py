@@ -263,7 +263,7 @@ def timegan_generator(model, T, args):
     
     model.load_state_dict(torch.load(f"{args.model_path}/model.pt"))
     
-    print("\nGenerating Data...")
+    #print("\nGenerating Data...")
     # Initialize model to evaluation mode and run without gradients
     model.to(args.device)
     model.eval()
