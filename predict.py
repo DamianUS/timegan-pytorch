@@ -6,6 +6,7 @@ import pickle
 import torch
 from models.timegan import TimeGAN
 import data_load
+from tqdm import tqdm
 
 def main(args):
     print(args)
@@ -20,7 +21,9 @@ def main(args):
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
     else:
         experiment_directories.append(root_dir)
-    for experiment_dir in experiment_directories:
+    progress_bar = tqdm(experiment_directories)
+    for experiment_dir in progress_bar:
+        progress_bar.set_description(f'Generating samples with model at {os.path.basename(os.path.normpath(experiment_dir))}')
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
         recovered_args.experiment_save_dir = f'{experiment_dir}'

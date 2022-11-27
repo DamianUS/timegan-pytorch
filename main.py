@@ -31,9 +31,9 @@ def main(args):
     ##############################################
 
     ## Output directories
-    experiment_save_dir = os.path.abspath(f'{args.experiment_save_dir}/generated_data')
-    if not os.path.exists(experiment_save_dir):
-        os.makedirs(experiment_save_dir, exist_ok=True)
+    # experiment_save_dir = os.path.abspath(f'{args.experiment_save_dir}/generated_data')
+    # if not os.path.exists(experiment_save_dir):
+    #     os.makedirs(experiment_save_dir, exist_ok=True)
     
     # TensorBoard directory
     tensorboard_path = os.path.abspath(f'{args.experiment_save_dir}/tensorboard')
