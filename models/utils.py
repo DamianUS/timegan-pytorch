@@ -114,8 +114,13 @@ def joint_trainer(
                 ## Generator Training
                 for _ in range(8):
                     # Random Generator
-                    Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
-
+                    #Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
+                    Z_mb = list()
+                    for i in range(args.batch_size):
+                        temp = np.zeros([args.max_seq_len, args.Z_dim])
+                        temp_Z = np.random.uniform(0., 1, [T_mb[i], args.Z_dim])
+                        temp[:T_mb[i], :] = temp_Z
+                        Z_mb.append(temp_Z)
                     # Forward Pass (Generator)
                     model.zero_grad()
                     G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
@@ -137,7 +142,13 @@ def joint_trainer(
                     r_opt.step()
 
                 # Random Generator
-                Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
+                #Z_mb = torch.rand((args.batch_size, args.max_seq_len, args.Z_dim))
+                Z_mb = list()
+                for i in range(args.batch_size):
+                    temp = np.zeros([args.max_seq_len, args.Z_dim])
+                    temp_Z = np.random.uniform(0., 1, [T_mb[i], args.Z_dim])
+                    temp[:T_mb[i], :] = temp_Z
+                    Z_mb.append(temp_Z)
 
                 ## Discriminator Training
                 model.zero_grad()
