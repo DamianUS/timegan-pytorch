@@ -12,13 +12,14 @@ class EmbeddingNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
-
+        self.dropout = args.embedding_dropout
         # Embedder Architecture
         self.emb_rnn = torch.nn.GRU(
             input_size=self.feature_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
-            batch_first=True
+            batch_first=True,
+            dropout= self.dropout
         )
         self.emb_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim)
         self.emb_sigmoid = torch.nn.Sigmoid()
@@ -87,13 +88,15 @@ class RecoveryNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
+        self.dropout = args.recovery_dropout
 
         # Recovery Architecture
         self.rec_rnn = torch.nn.GRU(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
-            batch_first=True
+            batch_first=True,
+            dropout=self.dropout
         )
         self.rec_linear = torch.nn.Linear(self.hidden_dim, self.feature_dim)
 
@@ -158,13 +161,15 @@ class SupervisorNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
+        self.dropout = args.supervisor_dropout
 
         # Supervisor Architecture
         self.sup_rnn = torch.nn.GRU(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers-1,
-            batch_first=True
+            batch_first=True,
+            dropout=self.dropout
         )
         self.sup_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim)
         self.sup_sigmoid = torch.nn.Sigmoid()
@@ -233,13 +238,15 @@ class GeneratorNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
+        self.dropout = args.generator_dropout
 
         # Generator Architecture
         self.gen_rnn = torch.nn.GRU(
             input_size=self.Z_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
-            batch_first=True
+            batch_first=True,
+            dropout = self.dropout
         )
         self.gen_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim)
         self.gen_sigmoid = torch.nn.Sigmoid()
@@ -307,13 +314,15 @@ class DiscriminatorNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
+        self.dropout = args.discriminator_dropout
 
         # Discriminator Architecture
         self.dis_rnn = torch.nn.GRU(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
-            batch_first=True
+            batch_first=True,
+            dropout=self.dropout
         )
         self.dis_linear = torch.nn.Linear(self.hidden_dim, 1)
 

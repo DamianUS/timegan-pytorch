@@ -232,6 +232,26 @@ if __name__ == "__main__":
         '--learning_rate',
         default=1e-3,
         type=float)
+    parser.add_argument(
+        '--embedding_dropout',
+        default=0.0,
+        type=float)
+    parser.add_argument(
+        '--recovery_dropout',
+        default=0.0,
+        type=float)
+    parser.add_argument(
+        '--supervisor_dropout',
+        default=0.0,
+        type=float)
+    parser.add_argument(
+        '--generator_dropout',
+        default=0.0,
+        type=float)
+    parser.add_argument(
+        '--discriminator_dropout',
+        default=0.0,
+        type=float)
 
     args = parser.parse_args()
 
