@@ -109,7 +109,8 @@ def joint_trainer(
     )
     
     for epoch in logger:
-        for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
+        intra_epoch_progress_bar = tqdm(dataloader, desc=f'Intra-epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0"', colour='yellow', leave=False)
+        for X_mb, T_mb in intra_epoch_progress_bar:
             if X_mb.shape[0] == args.batch_size:
                 ## Generator Training
                 for _ in range(2):
@@ -163,6 +164,9 @@ def joint_trainer(
                     # Update model parameters
                     d_opt.step()
                 D_loss = D_loss.item()
+                intra_epoch_progress_bar.set_description(
+                    f"Minibatch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, D: {D_loss:.4f}"
+                )
 
         logger.set_description(
             f"Epoch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, D: {D_loss:.4f}"
@@ -202,7 +206,7 @@ def timegan_trainer(model, data, time, args):
     dataloader = torch.utils.data.DataLoader(
         dataset=dataset,
         batch_size=args.batch_size,
-        shuffle=False    
+        shuffle=True
     )
 
     model.to(args.device)
