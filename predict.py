@@ -14,7 +14,7 @@ def main(args):
     root_dir = f'{args.experiment_directory_path}/model'
     if args.recursive == True:
         experiment_directories = []
-        for subdir, dirs, files in [(subdir, dirs, files) for subdir, dirs, files in os.walk(root_dir) if 'epoch_' in subdir and 'generated_data' not in subdir]:
+        for subdir, dirs, files in os.walk(args.experiment_directory_path):
             if 'epoch' in subdir:
                 experiment_directories.append(subdir)
     elif args.epoch >= 0:
