@@ -7,6 +7,8 @@ import torch
 from models.timegan import TimeGAN
 import data_load
 from tqdm import tqdm
+from natsort import natsorted
+
 
 def main(args):
     print(args)
@@ -14,9 +16,10 @@ def main(args):
     root_dir = f'{args.experiment_directory_path}/model'
     if args.recursive == True:
         experiment_directories = []
-        for subdir, dirs, files in [(subdir, dirs, files) for subdir, dirs, files in os.walk(root_dir) if 'epoch_' in subdir and 'generated_data' not in subdir]:
+        for subdir, dirs, files in os.walk(args.experiment_directory_path):
             if 'epoch' in subdir:
                 experiment_directories.append(subdir)
+        experiment_directories = natsorted(experiment_directories)
     elif args.epoch >= 0:
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
     else:
