@@ -35,15 +35,15 @@ def main(args):
         recovered_args.n_samples = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
-        if not has_attr(recovered_args, 'embedding_dropout'):
+        if not hasattr(recovered_args, 'embedding_dropout'):
             recovered_args.embedding_dropout = 0.0
-        if not has_attr(recovered_args, 'recovery_dropout'):
+        if not hasattr(recovered_args, 'recovery_dropout'):
             recovered_args.recovery_dropout = 0.0
-        if not has_attr(recovered_args, 'supervisor_dropout'):
+        if not hasattr(recovered_args, 'supervisor_dropout'):
             recovered_args.supervisor_dropout = 0.0
-        if not has_attr(recovered_args, 'generator_dropout'):
+        if not hasattr(recovered_args, 'generator_dropout'):
             recovered_args.generator_dropout = 0.0
-        if not has_attr(recovered_args, 'discriminator_dropout'):
+        if not hasattr(recovered_args, 'discriminator_dropout'):
             recovered_args.discriminator_dropout = 0.0
 
 
