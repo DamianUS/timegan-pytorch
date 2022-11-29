@@ -3,6 +3,7 @@
 import os
 import pickle
 import copy
+import random
 from typing import Dict, Union
 
 # 3rd party modules
@@ -155,8 +156,16 @@ def joint_trainer(
                 ## Discriminator Training
                 model.zero_grad()
                 # Forward Pass
-                D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
-
+                noise_X_mb = list()
+                for i in range(args.batch_size):
+                    temp = np.zeros([args.max_seq_len, args.Z_dim])
+                    temp_noise = np.random.uniform(0., 1, [T_mb[i], args.Z_dim])
+                    temp[:T_mb[i], :] = temp_noise
+                    noise_X_mb.append(temp_noise)
+                if random.random() >= args.noise_threshold:
+                    D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
+                else:
+                    D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
                 # Check Discriminator loss
                 if D_loss > args.dis_thresh:
                     # Backward Pass

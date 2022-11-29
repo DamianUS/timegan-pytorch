@@ -25,6 +25,7 @@ from metrics.metric_utils import (
 from models.timegan import TimeGAN
 from models.utils import timegan_trainer, timegan_generator, save_generated_data
 
+
 def main(args):
     ##############################################
     # Initialize output directories
@@ -34,7 +35,7 @@ def main(args):
     # experiment_save_dir = os.path.abspath(f'{args.experiment_save_dir}/generated_data')
     # if not os.path.exists(experiment_save_dir):
     #     os.makedirs(experiment_save_dir, exist_ok=True)
-    
+
     # TensorBoard directory
     tensorboard_path = os.path.abspath(f'{args.experiment_save_dir}/tensorboard')
     if not os.path.exists(tensorboard_path):
@@ -79,9 +80,14 @@ def main(args):
     # )
 
     if args.ori_data_filename is not None:
-        X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len, stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13, scaling_method='standard')
+        X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len,
+                                             stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13,
+                                             scaling_method='standard')
     else:
-        X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type, sequence_length=args.seq_len, stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13, scaling_method='standard')
+        X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type,
+                                                              sequence_length=args.seq_len, stride=1,
+                                                              trace_timestep=args.trace_timestep, shuffle=False,
+                                                              seed=13, scaling_method='standard')
 
     #########################
     # Initialize and Run model
@@ -103,12 +109,12 @@ def main(args):
     end = time.time()
 
     # print(f"Generated data preview:\n{generated_data_rescaled[:2, -10:, :2]}\n")
-    print(f"Model Runtime: {(end - start)/60} mins\n")
-    print(f"Total Runtime: {(time.time() - start)/60} mins\n")
+    print(f"Model Runtime: {(end - start) / 60} mins\n")
+    print(f"Total Runtime: {(time.time() - start) / 60} mins\n")
     #########################
     # Save train and generated data for visualization
     #########################
-    
+
     # Save splitted data and generated data
     # with open(f"{args.model_path}/train_data.pickle", "wb") as fb:
     #     pickle.dump(train_data, fb)
@@ -125,15 +131,17 @@ def main(args):
 
     return None
 
+
 def str2bool(v):
     if isinstance(v, bool):
-       return v
+        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 if __name__ == "__main__":
     # Inputs for the main function
@@ -250,6 +258,10 @@ if __name__ == "__main__":
         type=float)
     parser.add_argument(
         '--discriminator_dropout',
+        default=0.0,
+        type=float)
+    parser.add_argument(
+        '--noise_threshold',  # 0.0 means no noise
         default=0.0,
         type=float)
 
