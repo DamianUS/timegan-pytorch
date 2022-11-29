@@ -33,7 +33,7 @@ def main(args):
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
 
-        print("args.pickle read")
+        print("recovered_args", recovered_args)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
         recovered_args.is_train = False
         recovered_args.n_samples = args.n_samples_export
