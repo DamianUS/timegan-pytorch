@@ -264,6 +264,10 @@ if __name__ == "__main__":
         '--noise_threshold',  # 0.0 means no noise
         default=0.0,
         type=float)
+    parser.add_argument(
+        '--gamma',  # 0.0 means no noise
+        default=1,
+        type=int)
 
     args = parser.parse_args()
 

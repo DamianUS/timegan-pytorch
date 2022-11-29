@@ -35,7 +35,7 @@ def embedding_trainer(
 
                 # Forward Pass
                 # time = [args.max_seq_len for _ in range(len(T_mb))]
-                _, E_loss0, E_loss_T0 = model(X=X_mb, T=T_mb, Z=None, obj="autoencoder")
+                _, E_loss0, E_loss_T0 = model(X=X_mb, T=T_mb, Z=None, obj="autoencoder", gamma=args.gamma)
                 loss = np.sqrt(E_loss_T0.item())
 
                 # Backward Pass
@@ -73,7 +73,7 @@ def supervisor_trainer(
                 model.zero_grad()
 
                 # Forward Pass
-                S_loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor")
+                S_loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor", gamma=args.gamma)
 
                 # Backward Pass
                 S_loss.backward()
@@ -126,7 +126,7 @@ def joint_trainer(
                         Z_mb.append(temp_Z)
                     # Forward Pass (Generator)
                     model.zero_grad()
-                    G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator")
+                    G_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="generator", gamma=args.gamma)
                     G_loss.backward()
                     G_loss = G_loss.item()
 
@@ -136,7 +136,7 @@ def joint_trainer(
 
                     # Forward Pass (Embedding)
                     model.zero_grad()
-                    E_loss, _, E_loss_T0 = model(X=X_mb, T=T_mb, Z=Z_mb, obj="autoencoder")
+                    E_loss, _, E_loss_T0 = model(X=X_mb, T=T_mb, Z=Z_mb, obj="autoencoder", gamma=args.gamma)
                     E_loss.backward()
                     E_loss = np.sqrt(E_loss.item())
 
@@ -157,10 +157,10 @@ def joint_trainer(
                 model.zero_grad()
                 # Forward Pass
                 if random.random() >= args.noise_threshold:
-                    D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
+                    D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
                 else:
                     noise_X_mb = np.random.uniform(0., 1, [args.batch_size, T_mb[0], args.Z_dim])
-                    D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
+                    D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
                 # Check Discriminator loss
                 if D_loss > args.dis_thresh:
                     # Backward Pass
