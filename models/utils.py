@@ -272,9 +272,9 @@ def timegan_generator(model, T, args):
     if not os.path.exists(args.model_path):
         raise ValueError(f"Model directory not found...")
 
-    # Load arguments and model
-    with open(f"{args.model_path}/args.pickle", "rb") as fb:
-        args = torch.load(fb)
+    # # Load arguments and model
+    # with open(f"{args.model_path}/args.pickle", "rb") as fb:
+    #     args = torch.load(fb)
     
     model.load_state_dict(torch.load(f"{args.model_path}/model.pt"))
     
@@ -301,9 +301,10 @@ def save_generated_data(generated_data, scaler, experiment_save_dir, n_samples=1
 
 
 def save_epoch(args, epoch, model):
-    epoch_directory = f'{args.model_path}/epoch_{epoch}'
-    if not os.path.exists(epoch_directory):
-        os.makedirs(epoch_directory, exist_ok=True)
-    torch.save(args, f'{epoch_directory}/args.pickle')
-    torch.save(model.state_dict(), f'{epoch_directory}/model.pt')
-    print(f"\nSaved epoch_{epoch} at path: {epoch_directory}")
+    args_copy = deep_copy(args)
+    args_copy.model_path = f'{args_copy.model_path}/epoch_{epoch}'
+    if not os.path.exists(args_copy.model_path):
+        os.makedirs(args_copy.model_path , exist_ok=True)
+    torch.save(args_copy, f'{args_copy.model_path}/args.pickle')
+    torch.save(model.state_dict(), f'{args_copy.model_path}/model.pt')
+    print(f"\nSaved epoch_{epoch} at path: {args_copy.model_path}")
