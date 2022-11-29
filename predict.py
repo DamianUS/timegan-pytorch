@@ -33,12 +33,13 @@ def main(args):
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
 
-        print("recovered_args", recovered_args)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
         recovered_args.is_train = False
         recovered_args.n_samples = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
+        print("recovered_args modified", recovered_args)
+
         model = TimeGAN(recovered_args)
         if recovered_args.ori_data_filename is not None:
             X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
