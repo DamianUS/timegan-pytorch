@@ -29,6 +29,7 @@ def main(args):
     progress_bar = tqdm(experiment_directories)
     for experiment_dir in progress_bar:
         progress_bar.set_description(f'Generating samples with model at {os.path.basename(os.path.normpath(experiment_dir))}')
+        print(experiment_dir)
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
