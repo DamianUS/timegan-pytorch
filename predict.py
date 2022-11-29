@@ -20,6 +20,7 @@ def main(args):
             if 'epoch' in subdir:
                 experiment_directories.append(subdir)
         experiment_directories = natsorted(experiment_directories)
+        print(experiment_directories)
     elif args.epoch >= 0:
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
     else:
