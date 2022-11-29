@@ -156,15 +156,10 @@ def joint_trainer(
                 ## Discriminator Training
                 model.zero_grad()
                 # Forward Pass
-                noise_X_mb = list()
-                for i in range(args.batch_size):
-                    temp = np.zeros([args.max_seq_len, args.Z_dim])
-                    temp_noise = np.random.uniform(0., 1, [T_mb[i], args.Z_dim])
-                    temp[:T_mb[i], :] = temp_noise
-                    noise_X_mb.append(temp_noise)
                 if random.random() >= args.noise_threshold:
                     D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
                 else:
+                    noise_X_mb = np.random.uniform(0., 1, [args.batch_size, T_mb[0], args.Z_dim])
                     D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator")
                 # Check Discriminator loss
                 if D_loss > args.dis_thresh:
