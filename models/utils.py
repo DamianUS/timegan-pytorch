@@ -2,6 +2,7 @@
 # Local modules
 import os
 import pickle
+import copy
 from typing import Dict, Union
 
 # 3rd party modules
@@ -301,7 +302,7 @@ def save_generated_data(generated_data, scaler, experiment_save_dir, n_samples=1
 
 
 def save_epoch(args, epoch, model):
-    args_copy = deep_copy(args)
+    args_copy = copy.deep_copy(args)
     args_copy.model_path = f'{args_copy.model_path}/epoch_{epoch}'
     if not os.path.exists(args_copy.model_path):
         os.makedirs(args_copy.model_path , exist_ok=True)
