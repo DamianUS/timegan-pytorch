@@ -20,8 +20,6 @@ def main(args):
             if 'epoch' in subdir:
                 experiment_directories.append(subdir)
         experiment_directories = natsorted(experiment_directories)
-        for experiment_directory in experiment_directories:
-            print(experiment_directory)
     elif args.epoch >= 0:
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
     else:
@@ -29,7 +27,6 @@ def main(args):
     progress_bar = tqdm(experiment_directories)
     for experiment_dir in progress_bar:
         progress_bar.set_description(f'Generating samples with model at {os.path.basename(os.path.normpath(experiment_dir))}')
-        print(experiment_dir)
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
 
@@ -38,7 +35,6 @@ def main(args):
         recovered_args.n_samples = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
-        print("recovered_args modified", recovered_args)
 
         model = TimeGAN(recovered_args)
         if recovered_args.ori_data_filename is not None:
