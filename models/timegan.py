@@ -501,7 +501,6 @@ class TimeGAN(torch.nn.Module):
 
         G_loss_U = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake, torch.ones_like(Y_fake))
         G_loss_U_e = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e, torch.ones_like(Y_fake_e))
-
         # 2. Supervised loss
         G_loss_S = torch.nn.functional.mse_loss(H_hat_supervise[:,:-1,:], H[:,1:,:])        # Teacher forcing next output
 
@@ -513,7 +512,10 @@ class TimeGAN(torch.nn.Module):
 
         # 4. Summation
         G_loss = G_loss_U + gamma * G_loss_U_e + 100 * torch.sqrt(G_loss_S) + 100 * G_loss_V
-
+        print('G_loss_U', G_loss_U)
+        print('G_loss_U_e', G_loss_U_e)
+        print('G_loss_S', G_loss_S)
+        print('G_loss_V', G_loss_V)
         return G_loss
 
     def _inference(self, Z, T):
