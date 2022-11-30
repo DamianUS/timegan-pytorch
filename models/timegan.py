@@ -375,6 +375,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         )
 
         # 128 x 100
+        #logits = self.dis_linear(H_o[-1,:,:]).squeeze(-1)
         logits = self.dis_linear(H_o).squeeze(-1)
         return logits
 
@@ -457,13 +458,34 @@ class TimeGAN(torch.nn.Module):
         H_hat = self.supervisor(E_hat, T).detach()
 
         # Forward Pass
-        Y_real = self.discriminator(H, T)            # Encoded original data
-        Y_fake = self.discriminator(H_hat, T)        # Output of generator + supervisor
-        Y_fake_e = self.discriminator(E_hat, T)      # Output of generator
 
-        D_loss_real = torch.nn.functional.binary_cross_entropy_with_logits(Y_real, torch.ones_like(Y_real))
-        D_loss_fake = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake, torch.zeros_like(Y_fake))
-        D_loss_fake_e = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e, torch.zeros_like(Y_fake_e))
+        #Y_real = self.discriminator(H, T)            # Encoded original data
+        #Y_fake = self.discriminator(H_hat, T)        # Output of generator + supervisor
+        #Y_fake_e = self.discriminator(E_hat, T)      # Output of generator
+
+        Y_real = []
+        Y_fake = []
+        Y_fake_e = []
+        for i in range(H.shape[0]):
+            H_i = H[i, :, :]
+            H_hat_i = H_hat[i, :, :]
+            E_hat_i = E_hat[i, :, :]
+            T_i = T[i]
+            Y_real.append(self.discriminator(H_i.reshape(1, H_i.shape[0], H_i.shape[1]), T_i.reshape(1)))
+            Y_fake.append(self.discriminator(H_hat_i.reshape(1, H_hat_i.shape[0], H_hat_i.shape[1]), T_i.reshape(1)))
+            Y_fake_e.append(self.discriminator(E_hat_i.reshape(1, E_hat_i.shape[0], E_hat_i.shape[1]), T_i.reshape(1)))
+
+        # D_loss_real = torch.nn.functional.binary_cross_entropy_with_logits(Y_real, torch.ones_like(Y_real))
+        # D_loss_fake = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake, torch.zeros_like(Y_fake))
+        # D_loss_fake_e = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e, torch.zeros_like(Y_fake_e))
+
+        D_loss_real = sum([torch.nn.functional.binary_cross_entropy_with_logits(Y_real_seq, torch.ones_like(Y_real_seq)) for
+                       Y_real_seq in Y_real])
+        D_loss_fake = sum([torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_seq, torch.ones_like(Y_fake_seq)) for
+                       Y_fake_seq in Y_fake])
+        D_loss_fake_e = sum([torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_seq_e, torch.ones_like(Y_fake_seq_e)) for
+                       Y_fake_seq_e in Y_fake_e])
+
 
         D_loss = D_loss_real + D_loss_fake + gamma * D_loss_fake_e
 
@@ -491,12 +513,24 @@ class TimeGAN(torch.nn.Module):
 
         # Generator Loss
         # 1. Adversarial loss
-        Y_fake = self.discriminator(H_hat, T)        # Output of supervisor
-        Y_fake_e = self.discriminator(E_hat, T)      # Output of generator
+        # Y_fake = self.discriminator(H_hat, T)        # Output of supervisor
+        # Y_fake_e = self.discriminator(E_hat, T)      # Output of generator
 
-        G_loss_U = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake, torch.ones_like(Y_fake))
-        G_loss_U_e = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e, torch.ones_like(Y_fake_e))
+        Y_fake = []
+        Y_fake_e = []
+        for i in range(H_hat.shape[0]):
+            H_hat_i = H_hat[i, :, :]
+            E_hat_i = E_hat[i, :, :]
+            T_i = T[i]
+            Y_fake.append(self.discriminator(H_hat_i.reshape(1, H_hat_i.shape[0], H_hat_i.shape[1]), T_i.reshape(1)))
+            Y_fake_e.append(self.discriminator(E_hat_i.reshape(1, E_hat_i.shape[0], E_hat_i.shape[1]), T_i.reshape(1)))
 
+        # G_loss_U = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake, torch.ones_like(Y_fake))
+        # G_loss_U_e = torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e, torch.ones_like(Y_fake_e))
+        G_loss_U = sum([torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_seq, torch.ones_like(Y_fake_seq)) for
+             Y_fake_seq in Y_fake])
+        G_loss_U_e = sum([torch.nn.functional.binary_cross_entropy_with_logits(Y_fake_e_seq, torch.ones_like(Y_fake_e_seq)) for
+             Y_fake_e_seq in Y_fake_e])
         # 2. Supervised loss
         G_loss_S = torch.nn.functional.mse_loss(H_hat_supervise[:,:-1,:], H[:,1:,:])        # Teacher forcing next output
 
