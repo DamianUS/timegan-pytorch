@@ -242,27 +242,27 @@ if __name__ == "__main__":
         type=float)
     parser.add_argument(
         '--embedding_dropout',
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--recovery_dropout',
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--supervisor_dropout',
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--generator_dropout',
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--discriminator_dropout',
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--noise_threshold',  # 0.0 means no noise
-        default=0.0,
+        default=0,
         type=float)
     parser.add_argument(
         '--gamma',  # 0.0 means no noise

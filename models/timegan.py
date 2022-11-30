@@ -54,23 +54,24 @@ class EmbeddingNetwork(torch.nn.Module):
             - H: latent space embeddings (B x S x H)
         """
         # Dynamic RNN input for ignoring paddings
-        X_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=X, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # X_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=X,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 71
-        H_o, H_t = self.emb_rnn(X_packed)
+        #H_o, H_t = self.emb_rnn(X_packed)
+        H_o, H_t = self.emb_rnn(X)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
         
         # 128 x 100 x 10
         logits = self.emb_linear(H_o)
@@ -99,7 +100,7 @@ class RecoveryNetwork(torch.nn.Module):
             dropout=self.dropout
         )
         self.rec_linear = torch.nn.Linear(self.hidden_dim, self.feature_dim)
-
+        self.rec_sigmoid = torch.nn.Sigmoid()
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
         # Reference: 
@@ -130,26 +131,27 @@ class RecoveryNetwork(torch.nn.Module):
             - X_tilde: recovered data (B x S x F)
         """
         # Dynamic RNN input for ignoring paddings
-        H_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=H, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # H_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=H,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 10
-        H_o, H_t = self.rec_rnn(H_packed)
+        #H_o, H_t = self.rec_rnn(H_packed)
+        H_o, H_t = self.rec_rnn(H)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
 
         # 128 x 100 x 71
-        X_tilde = self.rec_linear(H_o)
+        X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
         return X_tilde
 
 class SupervisorNetwork(torch.nn.Module):
@@ -204,23 +206,24 @@ class SupervisorNetwork(torch.nn.Module):
             - H_hat: predicted next step data (B x S x E)
         """
         # Dynamic RNN input for ignoring paddings
-        H_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=H, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # H_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=H,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 10
-        H_o, H_t = self.sup_rnn(H_packed)
+        #H_o, H_t = self.sup_rnn(H_packed)
+        H_o, H_t = self.sup_rnn(H)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
 
         # 128 x 100 x 10
         logits = self.sup_linear(H_o)
@@ -281,23 +284,24 @@ class GeneratorNetwork(torch.nn.Module):
             - H: embeddings (B x S x E)
         """
         # Dynamic RNN input for ignoring paddings
-        Z_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=Z, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # Z_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=Z,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 71
-        H_o, H_t = self.gen_rnn(Z_packed)
+        #H_o, H_t = self.gen_rnn(Z_packed)
+        H_o, H_t = self.gen_rnn(Z)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
 
         # 128 x 100 x 10
         logits = self.gen_linear(H_o)
@@ -356,23 +360,24 @@ class DiscriminatorNetwork(torch.nn.Module):
             - logits: predicted logits (B x S x 1)
         """
         # Dynamic RNN input for ignoring paddings
-        H_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=H, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # H_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=H,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 10
-        H_o, H_t = self.dis_rnn(H_packed)
+        #H_o, H_t = self.dis_rnn(H_packed)
+        H_o, H_t = self.dis_rnn(H)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
 
         # 128 x 100
         logits = self.dis_linear(H_o).squeeze(-1)
