@@ -508,7 +508,7 @@ class TimeGAN(torch.nn.Module):
         G_loss_V1 = torch.mean(torch.abs(torch.sqrt(X_hat.var(dim=0, unbiased=False) + 1e-6) - torch.sqrt(X.var(dim=0, unbiased=False) + 1e-6)))
         G_loss_V2 = torch.mean(torch.abs((X_hat.mean(dim=0)) - (X.mean(dim=0))))
 
-        G_loss_V = 10*G_loss_V1 + G_loss_V2
+        G_loss_V = G_loss_V1 + G_loss_V2
 
         # 4. Summation
         G_loss = G_loss_U + gamma * G_loss_U_e + 100 * torch.sqrt(G_loss_S) + 100 * G_loss_V
