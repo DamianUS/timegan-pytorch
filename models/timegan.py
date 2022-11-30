@@ -14,7 +14,7 @@ class EmbeddingNetwork(torch.nn.Module):
         self.max_seq_len = args.max_seq_len
         self.dropout = args.embedding_dropout
         # Embedder Architecture
-        self.emb_rnn = torch.nn.GRU(
+        self.emb_rnn = torch.nn.LSTM(
             input_size=self.feature_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
@@ -91,7 +91,7 @@ class RecoveryNetwork(torch.nn.Module):
         self.dropout = args.recovery_dropout
 
         # Recovery Architecture
-        self.rec_rnn = torch.nn.GRU(
+        self.rec_rnn = torch.nn.LSTM(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
@@ -164,7 +164,7 @@ class SupervisorNetwork(torch.nn.Module):
         self.dropout = args.supervisor_dropout
 
         # Supervisor Architecture
-        self.sup_rnn = torch.nn.GRU(
+        self.sup_rnn = torch.nn.LSTM(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers-1,
@@ -241,7 +241,7 @@ class GeneratorNetwork(torch.nn.Module):
         self.dropout = args.generator_dropout
 
         # Generator Architecture
-        self.gen_rnn = torch.nn.GRU(
+        self.gen_rnn = torch.nn.LSTM(
             input_size=self.Z_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
@@ -317,7 +317,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         self.dropout = args.discriminator_dropout
 
         # Discriminator Architecture
-        self.dis_rnn = torch.nn.GRU(
+        self.dis_rnn = torch.nn.LSTM(
             input_size=self.hidden_dim, 
             hidden_size=self.hidden_dim, 
             num_layers=self.num_layers, 
