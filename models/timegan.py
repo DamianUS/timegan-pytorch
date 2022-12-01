@@ -512,10 +512,6 @@ class TimeGAN(torch.nn.Module):
 
         # 4. Summation
         G_loss = G_loss_U + gamma * G_loss_U_e + 100 * torch.sqrt(G_loss_S) + 100 * G_loss_V
-        print('G_loss_U', G_loss_U)
-        print('G_loss_U_e', G_loss_U_e)
-        print('G_loss_S', G_loss_S)
-        print('G_loss_V', G_loss_V)
         return G_loss
 
     def _inference(self, Z, T):
