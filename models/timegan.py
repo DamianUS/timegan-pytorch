@@ -151,8 +151,8 @@ class RecoveryNetwork(torch.nn.Module):
         )
 
         # 128 x 100 x 71
-        #X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
-        X_tilde = self.rec_linear(H_o)
+        X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
+        #X_tilde = self.rec_linear(H_o)
         return X_tilde
 
 class SupervisorNetwork(torch.nn.Module):
