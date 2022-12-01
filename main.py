@@ -81,13 +81,13 @@ def main(args):
 
     if args.ori_data_filename is not None:
         X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len,
-                                             stride=1, trace_timestep=args.trace_timestep, shuffle=False, seed=13,
-                                             scaling_method='standard')
+                                             stride=1, trace_timestep=args.trace_timestep, shuffle=True, seed=13,
+                                             scaling_method='minmax')
     else:
         X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type,
                                                               sequence_length=args.seq_len, stride=1,
-                                                              trace_timestep=args.trace_timestep, shuffle=False,
-                                                              seed=13, scaling_method='standard')
+                                                              trace_timestep=args.trace_timestep, shuffle=True,
+                                                              seed=13, scaling_method='minmax')
 
     #########################
     # Initialize and Run model

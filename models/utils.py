@@ -156,11 +156,12 @@ def joint_trainer(
                 ## Discriminator Training
                 model.zero_grad()
                 # Forward Pass
-                if random.random() >= args.noise_threshold:
-                    D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
-                else:
-                    noise_X_mb = np.random.uniform(0., 1, [args.batch_size, T_mb[0], args.Z_dim])
-                    D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
+                D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
+                # if random.random() >= args.noise_threshold:
+                #     D_loss = model(X=X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
+                # else:
+                #     noise_X_mb = np.random.uniform(0., 1, [args.batch_size, T_mb[0], args.Z_dim])
+                #     D_loss = model(X=noise_X_mb, T=T_mb, Z=Z_mb, obj="discriminator", gamma=args.gamma)
                 # Check Discriminator loss
                 if D_loss > args.dis_thresh:
                     # Backward Pass
