@@ -46,7 +46,7 @@ def main(args):
         if not hasattr(recovered_args, 'discriminator_dropout'):
             recovered_args.discriminator_dropout = 0.0
 
-
+        # TODO: Fix scaler
         model = TimeGAN(recovered_args)
         if recovered_args.ori_data_filename is not None:
             X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
