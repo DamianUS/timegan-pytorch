@@ -38,7 +38,7 @@ def main(args):
 
     # TensorBoard directory
     experiment_directory_name = os.path.basename(os.path.normpath(args.experiment_save_dir))
-    tensorboard_path = os.path.abspath(f'{args.experiment_save_dir}../tensorboards/{experiment_directory_name}')
+    tensorboard_path = os.path.abspath(f'{args.experiment_save_dir}/../tensorboards/{experiment_directory_name}')
     if not os.path.exists(tensorboard_path):
         os.makedirs(tensorboard_path, exist_ok=True)
 
