@@ -226,7 +226,7 @@ def timegan_trainer(model, data, time, args):
 
     # TensorBoard writer
     experiment_directory_name = os.path.basename(os.path.normpath(args.experiment_save_dir))
-    writer = SummaryWriter(os.path.join(f'{args.experiment_save_dir}/../tensorboards/{experiment_directory_name}')
+    writer = SummaryWriter(os.path.join(f'{args.experiment_save_dir}/../tensorboards/{experiment_directory_name}'))
 
     print("\nStart Embedding Network Training")
     embedding_trainer(
