@@ -290,7 +290,13 @@ def timegan_generator(model, T, args):
     model.eval()
     with torch.no_grad():
         # Generate fake data
-        Z = torch.rand((len(T), args.max_seq_len, args.Z_dim))
+        #Z_1 = torch.rand((len(T), args.max_seq_len, args.Z_dim))
+        Z = list()
+        for i in range(len(T)):
+            temp = np.zeros([args.max_seq_len, args.Z_dim])
+            temp_Z = np.random.uniform(0., 1, [T[i], args.Z_dim])
+            temp[:T[i], :] = temp_Z
+            Z.append(temp_Z)
         
         generated_data = model(X=None, T=T, Z=Z, obj="inference")
 
