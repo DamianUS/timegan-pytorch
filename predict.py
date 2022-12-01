@@ -51,12 +51,12 @@ def main(args):
         if recovered_args.ori_data_filename is not None:
             X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
                                                  stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False, seed=13,
-                                                 scaling_method='standard')
+                                                 scaling_method='minmax')
         else:
             X, T, scaler = data_load.get_datacentertraces_dataset(trace=recovered_args.trace, trace_type=recovered_args.trace_type,
                                                                   sequence_length=recovered_args.seq_len, stride=1,
                                                                   trace_timestep=recovered_args.trace_timestep, shuffle=False,
-                                                                  seed=13, scaling_method='standard')
+                                                                  seed=13, scaling_method='minmax')
         generated_data = timegan_generator(model, T, recovered_args)
         save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=10)
 
