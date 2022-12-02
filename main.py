@@ -28,6 +28,7 @@ from models.utils import timegan_trainer, timegan_generator, save_generated_data
 
 def search_previous_trained_model (experiment_save_dir):
     epoch_directories =[]
+    model, X, T, scaler, epoch_number = None, None, None, None, 0
     for subdir, dirs, files in os.walk(experiment_save_dir):
         if 'epoch' in dirs:
             epoch_directories.append(subdir)
