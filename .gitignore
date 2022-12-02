@@ -132,3 +132,4 @@ dmypy.json
 .idea/timegan-pytorch.iml
 .idea/vcs.xml
 .idea/inspectionProfiles/profiles_settings.xml
+.DS_Store
