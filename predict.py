@@ -29,7 +29,8 @@ def main(args):
         progress_bar.set_description(f'Generating samples with model at {os.path.basename(os.path.normpath(experiment_dir))}')
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
-
+        with open(f"{experiment_dir}/model.pt", "rb") as fb:
+            recovered_model_state_dict = torch.load(fb)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
         recovered_args.is_train = False
         recovered_args.n_samples = args.n_samples_export
@@ -48,6 +49,7 @@ def main(args):
 
         # TODO: Fix scaler
         model = TimeGAN(recovered_args)
+        model.load_state_dict(recovered_model_state_dict)
         if recovered_args.ori_data_filename is not None:
             X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
                                                  stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False, seed=13,
