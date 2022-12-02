@@ -67,7 +67,7 @@ def supervisor_trainer(
     initial_epoch_number=0) -> None:
     """The training loop for the supervisor function
     """
-    logger = tqdm(range(initial_epoch_number, args.emb_epochs), desc=f"Epoch: 0, Loss: 0")
+    logger = tqdm(range(initial_epoch_number, args.sup_epochs), desc=f"Epoch: 0, Loss: 0")
 
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
@@ -109,7 +109,7 @@ def joint_trainer(
     """The training loop for training the model altogether
     """
 
-    logger = tqdm(range(initial_epoch_number, args.emb_epochs+1), desc=f"Epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0")
+    logger = tqdm(range(initial_epoch_number, args.gan_epochs+1), desc=f"Epoch: {initial_epoch_number}, E_loss: 0, G_loss: 0, D_loss: 0")
 
     for epoch in logger:
         intra_epoch_progress_bar = tqdm(dataloader, desc=f'Intra-epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0"', colour='yellow', leave=False)

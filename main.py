@@ -30,19 +30,20 @@ def search_previous_trained_model (experiment_save_dir):
     epoch_directories =[]
     model, X, T, scaler, epoch_number = None, None, None, None, 0
     for subdir, dirs, files in os.walk(experiment_save_dir):
-        if 'epoch' in dirs:
+        if 'epoch' in subdir:
             epoch_directories.append(subdir)
     epoch_directories = natsorted(epoch_directories)
     print(epoch_directories)
     if epoch_directories and epoch_directories[-1]:
         print('Loading previous trained model from {}'.format(epoch_directories[-1]))
         experiment_dir = epoch_directories[-1]
-        epoch_number = int(experiment_dir.split('epoch')[-1])
+        epoch_number = int(experiment_dir.split('_')[-1])
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
             recovered_args = torch.load(fb)
+        with open(f"{experiment_dir}/model.pt", "rb") as fb:
+            recovered_model_state_dict = torch.load(fb)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
         recovered_args.is_train = False
-        recovered_args.n_samples = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
         if not hasattr(recovered_args, 'embedding_dropout'):
@@ -58,6 +59,7 @@ def search_previous_trained_model (experiment_save_dir):
 
         # TODO: Fix scaler
         model = TimeGAN(recovered_args)
+        model.load_state_dict(recovered_model_state_dict)
         if recovered_args.ori_data_filename is not None:
             X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
                                                  stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False, seed=13,
@@ -144,7 +146,7 @@ def main(args):
         initial_epoch_number = 0
         model = TimeGAN(args)
     else:
-        initial_epoch_number = last_epoch_number
+        initial_epoch_number = last_epoch_number+1
         args.feature_dim = X.shape[-1]
         args.Z_dim = X.shape[-1]
         args.padding_value = -1.0
