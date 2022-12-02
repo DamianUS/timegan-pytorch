@@ -25,7 +25,7 @@ recovery_dropout = [0]
 supervisor_dropout = [0]
 generator_dropout = [0]
 discriminator_dropout = [0]
-recovery_sigmoid = ['true']
+recovery_sigmoid = ['false']
 
 learning_rates = [1e-3]
 
