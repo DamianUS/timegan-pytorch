@@ -36,6 +36,8 @@ def main(args):
         recovered_args.n_samples = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
+        if not hasattr(recovered_args, 'recovery_sigmoid'):
+            recovered_args.recovery_sigmoid = args.recovery_sigmoid
         if not hasattr(recovered_args, 'embedding_dropout'):
             recovered_args.embedding_dropout = 0.0
         if not hasattr(recovered_args, 'recovery_dropout'):
@@ -80,6 +82,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--recursive',
         default=False,
+        type=lambda x: bool(util.strtobool(str(x))))
+    parser.add_argument(
+        "--recovery_sigmoid",
+        default=True,
         type=lambda x: bool(util.strtobool(str(x))))
     args = parser.parse_args()
     main(args)
