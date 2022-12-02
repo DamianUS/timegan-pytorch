@@ -33,6 +33,7 @@ def search_previous_trained_model (experiment_save_dir):
         if 'epoch' in dirs:
             epoch_directories.append(subdir)
     epoch_directories = natsorted(epoch_directories)
+    print(epoch_directories)
     if epoch_directories and epoch_directories[-1]:
         print('Loading previous trained model from {}'.format(epoch_directories[-1]))
         experiment_dir = epoch_directories[-1]
