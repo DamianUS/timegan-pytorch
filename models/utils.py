@@ -229,27 +229,28 @@ def timegan_trainer(model, data, time, args, initial_epoch_number=0):
     experiment_directory_name = os.path.basename(os.path.normpath(args.experiment_save_dir))
     writer = SummaryWriter(os.path.join(f'{args.experiment_save_dir}/../tensorboards/{experiment_directory_name}'))
 
-    print("\nStart Embedding Network Training")
-    embedding_trainer(
-        model=model,
-        dataloader=dataloader,
-        e_opt=e_opt,
-        r_opt=r_opt,
-        args=args,
-        writer=writer,
-        initial_epoch_number=initial_epoch_number
-    )
+    if initial_epoch_number == 0:
+        print("\nStart Embedding Network Training")
+        embedding_trainer(
+            model=model,
+            dataloader=dataloader,
+            e_opt=e_opt,
+            r_opt=r_opt,
+            args=args,
+            writer=writer
+        )
+        print("\nStart Training with Supervised Loss Only")
+        supervisor_trainer(
+            model=model,
+            dataloader=dataloader,
+            s_opt=s_opt,
+            g_opt=g_opt,
+            args=args,
+            writer=writer,
+        )
+    else:
+        print("\nSkip Embedding Network and Supervised Loss Only Trainings")
 
-    print("\nStart Training with Supervised Loss Only")
-    supervisor_trainer(
-        model=model,
-        dataloader=dataloader,
-        s_opt=s_opt,
-        g_opt=g_opt,
-        args=args,
-        writer=writer,
-        initial_epoch_number=initial_epoch_number
-    )
 
     print("\nStart Joint Training")
     joint_trainer(
