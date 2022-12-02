@@ -34,6 +34,7 @@ def search_previous_trained_model (experiment_save_dir):
             epoch_directories.append(subdir)
     epoch_directories = natsorted(epoch_directories)
     if epoch_directories and epoch_directories[-1]:
+        print('Loading previous trained model from {}'.format(epoch_directories[-1]))
         experiment_dir = epoch_directories[-1]
         epoch_number = int(experiment_dir.split('epoch')[-1])
         with open(f"{experiment_dir}/args.pickle", "rb") as fb:
