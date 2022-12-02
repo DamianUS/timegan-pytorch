@@ -22,11 +22,13 @@ def embedding_trainer(
     e_opt: torch.optim.Optimizer,
     r_opt: torch.optim.Optimizer,
     args: Dict,
-    writer: Union[torch.utils.tensorboard.SummaryWriter, type(None)]=None
-) -> None:
+    writer: Union[torch.utils.tensorboard.SummaryWriter, type(None)]=None,
+    initial_epoch_number=0) -> None:
     """The training loop for the embedding and recovery functions
     """
-    logger = trange(args.emb_epochs, desc=f"Epoch: 0, Loss: 0")
+    # create a tqdm progress bar from range (100, 1000)
+
+    logger = tqdm(range(initial_epoch_number, args.emb_epochs), desc=f"Epoch: 0, Loss: 0")
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             if X_mb.shape[0] == args.batch_size:
@@ -61,11 +63,12 @@ def supervisor_trainer(
     s_opt: torch.optim.Optimizer,
     g_opt: torch.optim.Optimizer,
     args: Dict,
-    writer: Union[torch.utils.tensorboard.SummaryWriter, type(None)]=None
-) -> None:
+    writer: Union[torch.utils.tensorboard.SummaryWriter, type(None)]=None,
+    initial_epoch_number=0) -> None:
     """The training loop for the supervisor function
     """
-    logger = trange(args.sup_epochs, desc=f"Epoch: 0, Loss: 0")
+    logger = tqdm(range(initial_epoch_number, args.emb_epochs), desc=f"Epoch: 0, Loss: 0")
+
     for epoch in logger:
         for X_mb, T_mb in tqdm(dataloader, desc='Intra-epochs iteration', colour='yellow', leave=False):
             if X_mb.shape[0] == args.batch_size:
@@ -102,13 +105,11 @@ def joint_trainer(
     d_opt: torch.optim.Optimizer,
     args: Dict,
     writer: Union[torch.utils.tensorboard.SummaryWriter, type(None)]=None,
-) -> None:
+    initial_epoch_number=0) -> None:
     """The training loop for training the model altogether
     """
-    logger = trange(
-        args.gan_epochs,
-        desc=f"Epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0"
-    )
+
+    logger = tqdm(range(initial_epoch_number, args.emb_epochs), desc=f"Epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0")
 
     for epoch in logger:
         intra_epoch_progress_bar = tqdm(dataloader, desc=f'Intra-epoch: 0, E_loss: 0, G_loss: 0, D_loss: 0"', colour='yellow', leave=False)
@@ -196,7 +197,7 @@ def joint_trainer(
             writer.flush()
         save_epoch(args, epoch, model)
 
-def timegan_trainer(model, data, time, args):
+def timegan_trainer(model, data, time, args, initial_epoch_number=0):
     """The training procedure for TimeGAN
     Args:
         - model (torch.nn.module): The model model that generates synthetic data
@@ -235,7 +236,8 @@ def timegan_trainer(model, data, time, args):
         e_opt=e_opt,
         r_opt=r_opt,
         args=args,
-        writer=writer
+        writer=writer,
+        initial_epoch_number=initial_epoch_number
     )
 
     print("\nStart Training with Supervised Loss Only")
@@ -245,7 +247,8 @@ def timegan_trainer(model, data, time, args):
         s_opt=s_opt,
         g_opt=g_opt,
         args=args,
-        writer=writer
+        writer=writer,
+        initial_epoch_number=initial_epoch_number
     )
 
     print("\nStart Joint Training")
@@ -259,6 +262,7 @@ def timegan_trainer(model, data, time, args):
         d_opt=d_opt,
         args=args,
         writer=writer,
+        initial_epoch_number=initial_epoch_number
     )
 
     # Save model, args, and hyperparameters

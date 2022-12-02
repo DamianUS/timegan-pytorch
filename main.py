@@ -8,6 +8,7 @@ import random
 import shutil
 import time
 from sklearn.preprocessing import StandardScaler
+from natsort import natsorted
 
 # 3rd-Party Modules
 import numpy as np
@@ -24,6 +25,47 @@ from metrics.metric_utils import (
 
 from models.timegan import TimeGAN
 from models.utils import timegan_trainer, timegan_generator, save_generated_data
+
+def search_previous_trained_model (experiment_save_dir):
+    epoch_directories =[]
+    for subdir, dirs, files in os.walk(experiment_save_dir):
+        if 'epoch' in dirs:
+            epoch_directories.append(subdir)
+    epoch_directories = natsorted(epoch_directories)
+    if epoch_directories[-1]:
+        experiment_dir = epoch_directories[-1]
+        epoch_number = int(experiment_dir.split('epoch')[-1])
+        with open(f"{experiment_dir}/args.pickle", "rb") as fb:
+            recovered_args = torch.load(fb)
+        recovered_args.experiment_save_dir = f'{experiment_dir}'
+        recovered_args.is_train = False
+        recovered_args.n_samples = args.n_samples_export
+        recovered_args.max_seq_len = recovered_args.seq_len
+        recovered_args.model_path = experiment_dir
+        if not hasattr(recovered_args, 'embedding_dropout'):
+            recovered_args.embedding_dropout = 0.0
+        if not hasattr(recovered_args, 'recovery_dropout'):
+            recovered_args.recovery_dropout = 0.0
+        if not hasattr(recovered_args, 'supervisor_dropout'):
+            recovered_args.supervisor_dropout = 0.0
+        if not hasattr(recovered_args, 'generator_dropout'):
+            recovered_args.generator_dropout = 0.0
+        if not hasattr(recovered_args, 'discriminator_dropout'):
+            recovered_args.discriminator_dropout = 0.0
+
+        # TODO: Fix scaler
+        model = TimeGAN(recovered_args)
+        if recovered_args.ori_data_filename is not None:
+            X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
+                                                 stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False, seed=13,
+                                                 scaling_method='minmax')
+        else:
+            X, T, scaler = data_load.get_datacentertraces_dataset(trace=recovered_args.trace, trace_type=recovered_args.trace_type,
+                                                                  sequence_length=recovered_args.seq_len, stride=1,
+                                                                  trace_timestep=recovered_args.trace_timestep, shuffle=False,
+                                                                  seed=13, scaling_method='minmax')
+
+    return model, X, T, scaler, epoch_number
 
 
 def main(args):
@@ -80,29 +122,42 @@ def main(args):
     #     data_path, args.max_seq_len
     # )
 
-    if args.ori_data_filename is not None:
-        X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len,
-                                             stride=1, trace_timestep=args.trace_timestep, shuffle=True, seed=13,
-                                             scaling_method='minmax')
-    else:
-        X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type,
-                                                              sequence_length=args.seq_len, stride=1,
-                                                              trace_timestep=args.trace_timestep, shuffle=True,
-                                                              seed=13, scaling_method='minmax')
-
-    #########################
-    # Initialize and Run model
-    #########################
+    model, X, T, scaler, last_epoch_number = search_previous_trained_model(args.experiment_save_dir)
+    initial_epoch_number = last_epoch_number
     args.feature_dim = X.shape[-1]
     args.Z_dim = X.shape[-1]
     args.padding_value = -1.0
     args.max_seq_len = args.seq_len
+
+    if model is None:
+        if args.ori_data_filename is not None:
+            X, T, scaler = data_load.get_dataset(ori_data_filename=args.ori_data_filename, sequence_length=args.seq_len,
+                                                stride=1, trace_timestep=args.trace_timestep, shuffle=True, seed=13,
+                                                scaling_method='minmax')
+        else:
+            X, T, scaler = data_load.get_datacentertraces_dataset(trace=args.trace, trace_type=args.trace_type,
+                                                                sequence_length=args.seq_len, stride=1,
+                                                                trace_timestep=args.trace_timestep, shuffle=True,
+                                                                seed=13, scaling_method='minmax')
+        args.feature_dim = X.shape[-1]
+        args.Z_dim = X.shape[-1]
+        args.padding_value = -1.0
+        args.max_seq_len = args.seq_len
+        initial_epoch_number = 0
+        model = TimeGAN(args)
+
+
+    #########################
+    # Initialize and Run model
+    #########################
+
+
     # Log start time
     start = time.time()
 
-    model = TimeGAN(args)
+
     if args.is_train == True:
-        timegan_trainer(model, X, T, args)
+        timegan_trainer(model, X, T, args, initial_epoch_number)
     # generated_data = timegan_generator(model, T, args)
     # save_generated_data(generated_data=generated_data, scaler=scaler, experiment_save_dir=experiment_save_dir, n_samples=10)
 
