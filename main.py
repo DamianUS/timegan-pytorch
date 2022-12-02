@@ -131,7 +131,7 @@ def main(args):
     #     data_path, args.max_seq_len
     # )
 
-    model, X, T, scaler, last_epoch_number = search_previous_trained_model(args.experiment_save_dir)
+    model, X, T, scaler, last_epoch_number = search_previous_trained_model(args.experiment_save_dir, args)
 
     if model is None:
         if args.ori_data_filename is not None:
