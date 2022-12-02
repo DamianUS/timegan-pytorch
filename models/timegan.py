@@ -15,9 +15,9 @@ class EmbeddingNetwork(torch.nn.Module):
         self.dropout = args.embedding_dropout
         # Embedder Architecture
         self.emb_rnn = torch.nn.GRU(
-            input_size=self.feature_dim, 
-            hidden_size=self.hidden_dim, 
-            num_layers=self.num_layers, 
+            input_size=self.feature_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
             batch_first=True,
             dropout= self.dropout
         )
@@ -26,7 +26,7 @@ class EmbeddingNetwork(torch.nn.Module):
 
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
-        # Reference: 
+        # Reference:
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
@@ -60,11 +60,11 @@ class EmbeddingNetwork(torch.nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        
+
         # 128 x 100 x 71
         H_o, H_t = self.emb_rnn(X_packed)
         #H_o, H_t = self.emb_rnn(X)
-        
+
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o,
@@ -72,7 +72,7 @@ class EmbeddingNetwork(torch.nn.Module):
             padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
-        
+
         # 128 x 100 x 10
         logits = self.emb_linear(H_o)
         # 128 x 100 x 10
@@ -90,12 +90,13 @@ class RecoveryNetwork(torch.nn.Module):
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
         self.dropout = args.recovery_dropout
+        self.add_sigmoid = args.recovery_sigmoid
 
         # Recovery Architecture
         self.rec_rnn = torch.nn.GRU(
-            input_size=self.hidden_dim, 
-            hidden_size=self.hidden_dim, 
-            num_layers=self.num_layers, 
+            input_size=self.hidden_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
             batch_first=True,
             dropout=self.dropout
         )
@@ -103,7 +104,7 @@ class RecoveryNetwork(torch.nn.Module):
         self.rec_sigmoid = torch.nn.Sigmoid()
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
-        # Reference: 
+        # Reference:
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
@@ -137,11 +138,11 @@ class RecoveryNetwork(torch.nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        
+
         # 128 x 100 x 10
         H_o, H_t = self.rec_rnn(H_packed)
         #H_o, H_t = self.rec_rnn(H)
-        
+
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o,
@@ -151,8 +152,11 @@ class RecoveryNetwork(torch.nn.Module):
         )
 
         # 128 x 100 x 71
-        X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
-        #X_tilde = self.rec_linear(H_o)
+        if(self.add_sigmoid):
+            X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
+        else:
+            X_tilde = self.rec_linear(H_o)
+
         return X_tilde
 
 class SupervisorNetwork(torch.nn.Module):
@@ -168,8 +172,8 @@ class SupervisorNetwork(torch.nn.Module):
 
         # Supervisor Architecture
         self.sup_rnn = torch.nn.GRU(
-            input_size=self.hidden_dim, 
-            hidden_size=self.hidden_dim, 
+            input_size=self.hidden_dim,
+            hidden_size=self.hidden_dim,
             num_layers=self.num_layers-1,
             batch_first=True,
             dropout=self.dropout
@@ -179,7 +183,7 @@ class SupervisorNetwork(torch.nn.Module):
 
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
-        # Reference: 
+        # Reference:
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
@@ -213,11 +217,11 @@ class SupervisorNetwork(torch.nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        
+
         # 128 x 100 x 10
         H_o, H_t = self.sup_rnn(H_packed)
         #H_o, H_t = self.sup_rnn(H)
-        
+
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o,
@@ -246,9 +250,9 @@ class GeneratorNetwork(torch.nn.Module):
 
         # Generator Architecture
         self.gen_rnn = torch.nn.GRU(
-            input_size=self.Z_dim, 
-            hidden_size=self.hidden_dim, 
-            num_layers=self.num_layers, 
+            input_size=self.Z_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
             batch_first=True,
             dropout = self.dropout
         )
@@ -257,7 +261,7 @@ class GeneratorNetwork(torch.nn.Module):
 
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
-        # Reference: 
+        # Reference:
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
@@ -291,11 +295,11 @@ class GeneratorNetwork(torch.nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        
+
         # 128 x 100 x 71
         H_o, H_t = self.gen_rnn(Z_packed)
         #H_o, H_t = self.gen_rnn(Z)
-        
+
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o,
@@ -323,9 +327,9 @@ class DiscriminatorNetwork(torch.nn.Module):
 
         # Discriminator Architecture
         self.dis_rnn = torch.nn.GRU(
-            input_size=self.hidden_dim, 
-            hidden_size=self.hidden_dim, 
-            num_layers=self.num_layers, 
+            input_size=self.hidden_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
             batch_first=True,
             dropout=self.dropout
         )
@@ -333,7 +337,7 @@ class DiscriminatorNetwork(torch.nn.Module):
 
         # Init weights
         # Default weights of TensorFlow is Xavier Uniform for W and 1 or 0 for b
-        # Reference: 
+        # Reference:
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
@@ -367,11 +371,11 @@ class DiscriminatorNetwork(torch.nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        
+
         # 128 x 100 x 10
         H_o, H_t = self.dis_rnn(H_packed)
         #H_o, H_t = self.dis_rnn(H)
-        
+
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o,
@@ -421,7 +425,7 @@ class TimeGAN(torch.nn.Module):
         # For Joint training
         H_hat_supervise = self.supervisor(H, T)
         G_loss_S = torch.nn.functional.mse_loss(
-            H_hat_supervise[:,:-1,:], 
+            H_hat_supervise[:,:-1,:],
             H[:,1:,:]
         ) # Teacher forcing next output
 
@@ -457,7 +461,7 @@ class TimeGAN(torch.nn.Module):
         """
         # Real
         H = self.embedder(X, T).detach()
-        
+
         # Generator
         E_hat = self.generator(Z, T).detach()
         H_hat = self.supervisor(E_hat, T).detach()
@@ -572,10 +576,10 @@ class TimeGAN(torch.nn.Module):
         elif obj == "discriminator":
             if Z is None:
                 raise ValueError("`Z` is not given")
-            
+
             # Discriminator
             loss = self._discriminator_forward(X, T, Z)
-            
+
             return loss
 
         elif obj == "inference":
