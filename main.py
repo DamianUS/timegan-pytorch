@@ -124,11 +124,6 @@ def main(args):
     # )
 
     model, X, T, scaler, last_epoch_number = search_previous_trained_model(args.experiment_save_dir)
-    initial_epoch_number = last_epoch_number
-    args.feature_dim = X.shape[-1]
-    args.Z_dim = X.shape[-1]
-    args.padding_value = -1.0
-    args.max_seq_len = args.seq_len
 
     if model is None:
         if args.ori_data_filename is not None:
@@ -146,6 +141,12 @@ def main(args):
         args.max_seq_len = args.seq_len
         initial_epoch_number = 0
         model = TimeGAN(args)
+    else:
+        initial_epoch_number = last_epoch_number
+        args.feature_dim = X.shape[-1]
+        args.Z_dim = X.shape[-1]
+        args.padding_value = -1.0
+        args.max_seq_len = args.seq_len
 
 
     #########################
