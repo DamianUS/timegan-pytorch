@@ -6,26 +6,26 @@ from datetime import datetime
 
 def generate_experiment_command(module, num_layers, hidden_dim, emb_epochs, sup_epochs, gan_epochs, embedding_dropout,
                     recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout, learning_rate,
-                                trace, seq_len, batch_size, scaling_method):
-    experiment_save_dir = f'~/experiments/timegan-pytorch/alibaba2018/small-tests/test/tensorboard/num_layers-{num_layers}-hidden_dim-{hidden_dim}-gan_epochs-{gan_epochs}-batch_size-{batch_size}'
-    return f'python main.py --module {module} --num_layers {num_layers} --hidden_dim {hidden_dim} --emb_epochs {emb_epochs} ' \
+                                trace, seq_len, batch_size, scaling_method, recovery_sigmoid, device):
+    experiment_save_dir = f'~/experiments/timegan-pytorch/alibaba2018/3_layers_tests/num_layers-{num_layers}-hidden_dim-{hidden_dim}-batch_size-{batch_size}-recover_sigmoid-{recovery_sigmoid}'
+    return f'python main.py --device {device} --module {module} --num_layers {num_layers} --hidden_dim {hidden_dim} --emb_epochs {emb_epochs} ' \
            f'--sup_epochs {sup_epochs} --gan_epochs {gan_epochs} --embedding_dropout {embedding_dropout} --recovery_dropout {recovery_dropout} ' \
            f'--supervisor_dropout {supervisor_dropout} --generator_dropout {generator_dropout} --discriminator_dropout {discriminator_dropout} --learning_rate {learning_rate} ' \
-           f'--trace {trace} --seq_len {seq_len} --n_samples 10 --scaling_method {scaling_method} ' \
-           f'--experiment_save_dir {experiment_save_dir}' \
-           f'\n'
+           f'--trace {trace} --seq_len {seq_len} --batch_size {batch_size} --n_samples 10 --scaling_method {scaling_method} ' \
+           f'--recovery_sigmoid {recovery_sigmoid} --experiment_save_dir {experiment_save_dir}\n'
 
 modules = ['gru']
-num_layers = [2]
-hidden_dims = [5]
-emb_epochs = [5]
-sup_epochs = [5]
-gan_epochs = [50]
-embedding_dropout = [0.5]
-recovery_dropout = [0.5]
-supervisor_dropout = [0.5]
-generator_dropout = [0.5]
-discriminator_dropout = [0.5]
+num_layers = [3]
+hidden_dims = [8, 10, 12, 14, 16]
+emb_epochs = [50]
+sup_epochs = [50]
+gan_epochs = [200]
+embedding_dropout = [0]
+recovery_dropout = [0]
+supervisor_dropout = [0]
+generator_dropout = [0]
+discriminator_dropout = [0]
+recovery_sigmoid = ['true']
 
 learning_rates = [1e-3]
 
@@ -33,21 +33,22 @@ traces = ['alibaba2018']
 seq_lengths = [288]
 batch_sizes = [32,64,128]
 scaling_methods = ['minmax']  # 'minmax'
+device = 'cuda'
 
 parameterization = [modules, num_layers, hidden_dims, emb_epochs, sup_epochs, gan_epochs, embedding_dropout,
                     recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout,
-                    learning_rates, traces, seq_lengths, batch_sizes, scaling_methods]
+                    learning_rates, traces, seq_lengths, batch_sizes, scaling_methods, recovery_sigmoid]
 
 parameterization_combinations = list(itertools.product(*parameterization))
 
 commands = [
     generate_experiment_command(module, num_layers, hidden_dim, emb_epochs, sup_epochs, gan_epochs, embedding_dropout,
                                 recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout,
-                                learning_rate, trace, seq_len, batch_size, scaling_method) for
-    module, num_layers, hidden_dim, emb_epochs, sup_epochs, gan_epochs, embedding_dropout, recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout, learning_rate, trace, seq_len, batch_size, scaling_method
+                                learning_rate, trace, seq_len, batch_size, scaling_method, recovery_sigmoid, device) for
+    module, num_layers, hidden_dim, emb_epochs, sup_epochs, gan_epochs, embedding_dropout, recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout, learning_rate, trace, seq_len, batch_size, scaling_method, recovery_sigmoid
     in parameterization_combinations]
 
-sh_filename = "pytorch-testing-" + datetime.now().strftime("%j-%Y-%H-%M") + ".sh"
+sh_filename = "3-layers-testing-" + datetime.now().strftime("%j-%Y-%H-%M") + ".sh"
 sh_file = open(sh_filename, "w")
 sh_file.writelines(commands)
 st = os.stat(sh_filename)
