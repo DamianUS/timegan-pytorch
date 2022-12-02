@@ -17,7 +17,7 @@ def main(args):
     if args.recursive == True:
         experiment_directories = []
         for subdir, dirs, files in os.walk(args.experiment_directory_path):
-            if 'epoch' in subdir:
+            if 'epoch' in os.path.basename(os.path.normpath(subdir)):
                 experiment_directories.append(subdir)
         experiment_directories = natsorted(experiment_directories)
     elif args.epoch >= 0:
