@@ -153,8 +153,10 @@ class RecoveryNetwork(torch.nn.Module):
 
         # 128 x 100 x 71
         if(self.add_sigmoid):
+            print("recovery sigmoid added")
             X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
         else:
+            print("no recovery sigmoid")
             X_tilde = self.rec_linear(H_o)
 
         return X_tilde

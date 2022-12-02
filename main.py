@@ -26,7 +26,8 @@ from metrics.metric_utils import (
 from models.timegan import TimeGAN
 from models.utils import timegan_trainer, timegan_generator, save_generated_data
 
-def search_previous_trained_model (experiment_save_dir):
+#TODO: we pass args to overwrite the sigmoid or not sigmoid in experiments which didn't have this parameterization. In the future this should not be necessary
+def search_previous_trained_model (experiment_save_dir, args):
     epoch_directories =[]
     model, X, T, scaler, epoch_number = None, None, None, None, 0
     for subdir, dirs, files in os.walk(experiment_save_dir):
@@ -45,6 +46,8 @@ def search_previous_trained_model (experiment_save_dir):
         recovered_args.is_train = False
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
+        if not hasattr(recovered_args, 'recovery_sigmoid'):
+            recovered_args.recovery_sigmoid = args.recovery_sigmoid
         if not hasattr(recovered_args, 'embedding_dropout'):
             recovered_args.embedding_dropout = 0.0
         if not hasattr(recovered_args, 'recovery_dropout'):
@@ -55,6 +58,8 @@ def search_previous_trained_model (experiment_save_dir):
             recovered_args.generator_dropout = 0.0
         if not hasattr(recovered_args, 'discriminator_dropout'):
             recovered_args.discriminator_dropout = 0.0
+
+        print("recovered args", recovered_args)
 
         # TODO: Fix scaler
         model = TimeGAN(recovered_args)
