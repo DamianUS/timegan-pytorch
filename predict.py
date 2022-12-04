@@ -15,7 +15,7 @@ import multiprocessing
 
 from concurrent.futures import ProcessPoolExecutor
 
-MAX_WORKERS = int(ProcessPoolExecutor()._max_workers/2)
+MAX_WORKERS = int(ProcessPoolExecutor()._max_workers/4)
 CHUNK_SIZE = 5
 
 
@@ -43,10 +43,11 @@ def main(args):
         results_progress_bar = tqdm(
             pool.imap_unordered(load_and_generate_samples, args_params_array, chunksize=CHUNK_SIZE),
             total=len(args_params_array),
-            desc='Computing metrics'
+            desc='Generating samples'
         )
     for generated_data, scaler, experiment_dir in results_progress_bar:
-            save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=10)
+        save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=10)
+        results_progress_bar.set_description(f'Generated samples for {experiment_dir}')
 
 
 def load_and_generate_samples(args):
