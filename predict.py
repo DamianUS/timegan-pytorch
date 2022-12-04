@@ -10,13 +10,14 @@ from tqdm import tqdm
 from natsort import natsorted
 import copy
 import multiprocessing
+from pathlib import Path
 
 
 
 from concurrent.futures import ProcessPoolExecutor
 
 MAX_WORKERS = int(ProcessPoolExecutor()._max_workers/4)
-CHUNK_SIZE = 5
+CHUNK_SIZE = 1
 
 
 def main(args):
@@ -47,7 +48,7 @@ def main(args):
         )
     for generated_data, scaler, experiment_dir in results_progress_bar:
         save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=10)
-        results_progress_bar.set_description(f'Generated samples for {experiment_dir}')
+        results_progress_bar.set_description(f'Generated samples for {Path(*Path(experiment_dir).parts[-3:])}')
 
 
 def load_and_generate_samples(args):
