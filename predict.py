@@ -8,6 +8,7 @@ from models.timegan import TimeGAN
 import data_load
 from tqdm import tqdm
 from natsort import natsorted
+import copy
 
 
 from concurrent.futures import ProcessPoolExecutor
@@ -30,12 +31,12 @@ def main(args):
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
     else:
         experiment_directories.append(root_dir)
-    #progress_bar = tqdm()
     args_params_array = []
     for experiment_dir in experiment_directories:
         args.experiment_dir = experiment_dir
         args_params_array.append(copy.deepcopy(args))
 
+    print(args_params_array)
     with multiprocessing.Pool(processes=MAX_WORKERS) as pool:
         results_progress_bar = tqdm(
             results_progress_bar = pool.imap_unordered(load_and_generate_samples, args_params_array, chunksize=CHUNK_SIZE),
