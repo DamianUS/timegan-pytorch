@@ -174,7 +174,7 @@ class SupervisorNetwork(torch.nn.Module):
         self.sup_rnn = torch.nn.GRU(
             input_size=self.hidden_dim,
             hidden_size=self.hidden_dim,
-            num_layers=self.num_layers-1,
+            num_layers=self.num_layers,
             batch_first=True,
             dropout=self.dropout
         )
