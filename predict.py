@@ -41,7 +41,7 @@ def main(args):
     print(args_params_array)
     with multiprocessing.Pool(processes=MAX_WORKERS) as pool:
         results_progress_bar = tqdm(
-            results_progress_bar = pool.imap_unordered(load_and_generate_samples, args_params_array, chunksize=CHUNK_SIZE),
+            pool.imap_unordered(load_and_generate_samples, args_params_array, chunksize=CHUNK_SIZE),
             total=len(args_params_array),
             desc='Computing metrics'
         )
