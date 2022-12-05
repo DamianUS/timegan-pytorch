@@ -33,7 +33,7 @@ def main(args):
             recovered_model_state_dict = torch.load(fb)
         recovered_args.experiment_save_dir = f'{experiment_dir}'
         recovered_args.is_train = False
-        recovered_args.n_samples = args.n_samples_export
+        recovered_args.n_samples_export = args.n_samples_export
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
         if not hasattr(recovered_args, 'embedding_dropout'):
