@@ -46,8 +46,6 @@ def search_previous_trained_model (experiment_save_dir, args):
         recovered_args.is_train = False
         recovered_args.max_seq_len = recovered_args.seq_len
         recovered_args.model_path = experiment_dir
-        if not hasattr(recovered_args, 'recovery_sigmoid'):
-            recovered_args.recovery_sigmoid = args.recovery_sigmoid
         if not hasattr(recovered_args, 'embedding_dropout'):
             recovered_args.embedding_dropout = 0.0
         if not hasattr(recovered_args, 'recovery_dropout'):
