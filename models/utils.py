@@ -134,6 +134,7 @@ def joint_trainer(
                     # Update model parameters
                     g_opt.step()
                     s_opt.step()
+                    S_Loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor", gamma=args.gamma).item()
 
                     # Forward Pass (Embedding)
                     model.zero_grad()
@@ -192,6 +193,11 @@ def joint_trainer(
             writer.add_scalar(
                 'Joint/Discriminator_Loss:',
                 D_loss,
+                epoch
+            )
+            writer.add_scalar(
+                'Joint/Supervisor_Loss:',
+                S_Loss,
                 epoch
             )
             writer.flush()
