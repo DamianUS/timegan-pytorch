@@ -173,7 +173,7 @@ def joint_trainer(
                     d_opt.step()
                 D_loss = D_loss.item()
                 intra_epoch_progress_bar.set_description(
-                    f"Minibatch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, D: {D_loss:.4f}"
+                    f"Minibatch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, S: {S_loss: .4f}, D: {D_loss:.4f}"
                 )
 
         logger.set_description(
