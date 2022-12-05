@@ -90,7 +90,6 @@ class RecoveryNetwork(torch.nn.Module):
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
         self.dropout = args.recovery_dropout
-        self.add_sigmoid = args.recovery_sigmoid
 
         # Recovery Architecture
         self.rec_rnn = torch.nn.GRU(
@@ -139,9 +138,7 @@ class RecoveryNetwork(torch.nn.Module):
             enforce_sorted=False
         )
 
-        # 128 x 100 x 10
         H_o, H_t = self.rec_rnn(H_packed)
-        #H_o, H_t = self.rec_rnn(H)
 
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
@@ -151,11 +148,7 @@ class RecoveryNetwork(torch.nn.Module):
             total_length=self.max_seq_len
         )
 
-        # 128 x 100 x 71
-        if(self.add_sigmoid):
-            X_tilde =self.rec_sigmoid(self.rec_linear(H_o))
-        else:
-            X_tilde = self.rec_linear(H_o)
+        X_tilde = self.rec_linear(H_o)
 
         return X_tilde
 

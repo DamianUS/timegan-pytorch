@@ -334,10 +334,6 @@ if __name__ == "__main__":
         '--gamma',  # 0.0 means no noise
         default=1,
         type=int)
-    parser.add_argument(
-        "--recovery_sigmoid",
-        type=str2bool,
-        default=True)
 
     args = parser.parse_args()
 
