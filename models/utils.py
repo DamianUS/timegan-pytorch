@@ -134,7 +134,7 @@ def joint_trainer(
                     # Update model parameters
                     g_opt.step()
                     s_opt.step()
-                    S_Loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor", gamma=args.gamma).item()
+                    S_loss = model(X=X_mb, T=T_mb, Z=None, obj="supervisor", gamma=args.gamma).item()
 
                     # Forward Pass (Embedding)
                     model.zero_grad()
@@ -177,7 +177,7 @@ def joint_trainer(
                 )
 
         logger.set_description(
-            f"Epoch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, D: {D_loss:.4f}"
+            f"Epoch: {epoch}, E: {E_loss:.4f}, G: {G_loss:.4f}, S: {S_loss: .4f} D: {D_loss:.4f}"
         )
         if writer:
             writer.add_scalar(
@@ -197,7 +197,7 @@ def joint_trainer(
             )
             writer.add_scalar(
                 'Joint/Supervisor_Loss:',
-                S_Loss,
+                S_loss,
                 epoch
             )
             writer.flush()
