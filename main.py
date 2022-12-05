@@ -166,32 +166,13 @@ def main(args):
 
     if args.is_train == True:
         timegan_trainer(model, X, T, args, initial_epoch_number)
-    # generated_data = timegan_generator(model, T, args)
-    # save_generated_data(generated_data=generated_data, scaler=scaler, experiment_save_dir=experiment_save_dir, n_samples=10)
+
 
     # Log end time
     end = time.time()
 
-    # print(f"Generated data preview:\n{generated_data_rescaled[:2, -10:, :2]}\n")
     print(f"Model Runtime: {(end - start) / 60} mins\n")
     print(f"Total Runtime: {(time.time() - start) / 60} mins\n")
-    #########################
-    # Save train and generated data for visualization
-    #########################
-
-    # Save splitted data and generated data
-    # with open(f"{args.model_path}/train_data.pickle", "wb") as fb:
-    #     pickle.dump(train_data, fb)
-    # with open(f"{args.model_path}/train_time.pickle", "wb") as fb:
-    #     pickle.dump(train_time, fb)
-    # with open(f"{args.model_path}/test_data.pickle", "wb") as fb:
-    #     pickle.dump(test_data, fb)
-    # with open(f"{args.model_path}/test_time.pickle", "wb") as fb:
-    #     pickle.dump(test_time, fb)
-    # with open(f"{args.model_path}/fake_data.pickle", "wb") as fb:
-    #     pickle.dump(generated_data_rescaled, fb)
-    # with open(f"{args.model_path}/fake_time.pickle", "wb") as fb:
-    #     pickle.dump(generated_time, fb)
 
     return None
 
@@ -234,10 +215,6 @@ if __name__ == "__main__":
     parser.add_argument(
         '--seq_len',
         default=288,
-        type=int)
-    parser.add_argument(
-        '--n_samples',
-        default=10,
         type=int)
     parser.add_argument(
         '--scaling_method',
