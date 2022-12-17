@@ -60,7 +60,7 @@ def main(args):
                                                                   trace_timestep=recovered_args.trace_timestep, shuffle=False,
                                                                   seed=13, scaling_method='minmax')
         generated_data = timegan_generator(model, T, recovered_args)
-        save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=10)
+        save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=args.n_samples_export)
 
 
 if __name__ == '__main__':
@@ -79,6 +79,10 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--recursive',
+        default=False,
+        type=lambda x: bool(util.strtobool(str(x))))
+    parser.add_argument(
+        '--recompute',
         default=False,
         type=lambda x: bool(util.strtobool(str(x))))
     args = parser.parse_args()
