@@ -14,11 +14,12 @@ def main(args):
     print(args)
     experiment_directories = []
     root_dir = f'{args.experiment_directory_path}/model'
-    if args.recursive == True:
+    if args.recursive is True:
         experiment_directories = []
         for subdir, dirs, files in os.walk(args.experiment_directory_path):
             if 'epoch' in os.path.basename(os.path.normpath(subdir)):
-                experiment_directories.append(subdir)
+                if args.recompute is True or not os.path.exists(f'{subdir}/generated_data'):
+                    experiment_directories.append(subdir)
         experiment_directories = natsorted(experiment_directories)
     elif args.epoch >= 0:
         experiment_directories.append(f'{root_dir}/epoch_{args.epoch}')
@@ -51,13 +52,17 @@ def main(args):
         model = TimeGAN(recovered_args)
         model.load_state_dict(recovered_model_state_dict)
         if recovered_args.ori_data_filename is not None:
-            X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename, sequence_length=recovered_args.seq_len,
-                                                 stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False, seed=13,
+            X, T, scaler = data_load.get_dataset(ori_data_filename=recovered_args.ori_data_filename,
+                                                 sequence_length=recovered_args.seq_len,
+                                                 stride=1, trace_timestep=recovered_args.trace_timestep, shuffle=False,
+                                                 seed=13,
                                                  scaling_method='minmax')
         else:
-            X, T, scaler = data_load.get_datacentertraces_dataset(trace=recovered_args.trace, trace_type=recovered_args.trace_type,
+            X, T, scaler = data_load.get_datacentertraces_dataset(trace=recovered_args.trace,
+                                                                  trace_type=recovered_args.trace_type,
                                                                   sequence_length=recovered_args.seq_len, stride=1,
-                                                                  trace_timestep=recovered_args.trace_timestep, shuffle=False,
+                                                                  trace_timestep=recovered_args.trace_timestep,
+                                                                  shuffle=False,
                                                                   seed=13, scaling_method='minmax')
         generated_data = timegan_generator(model, T, recovered_args)
         save_generated_data(generated_data, scaler, f'{experiment_dir}/generated_data', n_samples=args.n_samples_export)
