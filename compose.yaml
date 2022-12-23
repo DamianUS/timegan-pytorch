@@ -1,6 +1,5 @@
 services:
   timegan-pytorch:
-    user: "${UID}:${GID}"
     build:
       context: .
       args:
