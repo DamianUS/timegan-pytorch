@@ -14,6 +14,9 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
               capabilities: [gpu]
     command: ${COMMANDS_PATH}
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
