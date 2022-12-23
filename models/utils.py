@@ -215,7 +215,7 @@ def timegan_trainer(model, data, time, args, initial_epoch_number=0):
     """
 
     # Initialize TimeGAN dataset and dataloader
-    dataset = TimeGANDataset(data, time)
+    dataset = TimeGANDataset(data, time, device=args.device)
     dataloader = torch.utils.data.DataLoader(
         dataset=dataset,
         batch_size=args.batch_size,

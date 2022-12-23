@@ -154,8 +154,6 @@ def main(args):
         args.padding_value = -1.0
         args.max_seq_len = args.seq_len
 
-    X.to(args.device)
-    T.to(args.device)
     #########################
     # Initialize and Run model
     #########################

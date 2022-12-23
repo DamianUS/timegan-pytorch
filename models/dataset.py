@@ -12,7 +12,7 @@ class TimeGANDataset(torch.utils.data.Dataset):
         - x (torch.FloatTensor): the real value features of the data
         - t (torch.LongTensor): the temporal feature of the data 
     """
-    def __init__(self, data, time=None, padding_value=None):
+    def __init__(self, data, time=None, padding_value=None, device=None):
         # sanity check
         if len(data) != len(time):
             raise ValueError(
@@ -24,6 +24,9 @@ class TimeGANDataset(torch.utils.data.Dataset):
 
         self.X = torch.FloatTensor(data)
         self.T = torch.LongTensor(time)
+        if device is not None:
+            self.X.to(device)
+            self.T.to(device)
 
     def __len__(self):
         return len(self.X)
