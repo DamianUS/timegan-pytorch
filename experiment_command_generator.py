@@ -1,3 +1,4 @@
+from decimal import Decimal
 import itertools
 import os
 import stat
@@ -7,7 +8,7 @@ from datetime import datetime
 def compose_training_command(module, num_layers, hidden_dim, emb_sup_epochs, gan_epochs, embedding_dropout,
                              recovery_dropout, supervisor_dropout, generator_dropout, discriminator_dropout,
                              learning_rate, trace, seq_len, batch_size, scaling_method, device):
-    experiment_save_dir = f'~/experiments/timegan-pytorch/alibaba2018/GRU-seq_len-{seq_len}/num_layers-{num_layers}-hidden_dim-{hidden_dim}-batch_size-{batch_size}-module-{module}-emb_sup_e-{emb_sup_epochs}'
+    experiment_save_dir = f'~/experiments/timegan-pytorch/{trace}/GRU-seq_len-{seq_len}/num_layers-{num_layers}-hidden_dim-{hidden_dim}-batch_size-{batch_size}-module-{module}-emb_sup_e-{emb_sup_epochs}-lr-{learning_rate:.{max(1, -int(Decimal(str(learning_rate)).as_tuple().exponent))}f}'
     training_command = f'python train.py  --module {module} --num_layers {num_layers} --hidden_dim {hidden_dim} --batch_size {batch_size} ' \
            f'--emb_epochs {emb_sup_epochs} --sup_epochs {emb_sup_epochs} --gan_epochs {gan_epochs} ' \
            f'--seq_len {seq_len} --scaling_method {scaling_method} --learning_rate {learning_rate} ' \
@@ -30,9 +31,9 @@ def compose_training_and_generation_command(module, num_layers, hidden_dim, emb_
     return training_command + generation_command
 
 modules = ['gru']
-num_layers = [2, 3, 4]
-hidden_dims = [16, 32, 64, 128]
-emb_sup_epochs = [200, 2000]
+num_layers = [2,3,4]
+hidden_dims = [16,32,64,128]
+emb_sup_epochs = [2000]
 gan_epochs = [2000]
 embedding_dropout = [0]
 recovery_dropout = [0]
@@ -40,11 +41,11 @@ supervisor_dropout = [0]
 generator_dropout = [0]
 discriminator_dropout = [0]
 
-learning_rates = [1e-3]
+learning_rates = [0.001,0.0003,0.0001,0.00001]
 
-traces = ['alibaba2018']
+traces = ['alibaba2018','azure_v2','google2019']
 seq_lengths = [288]
-batch_sizes = [128]
+batch_sizes = [32,128]
 scaling_methods = ['minmax']  # 'minmax'
 device = 'cuda'
 n_samples_export = 10
